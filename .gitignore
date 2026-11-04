@@ -16,7 +16,8 @@ xcuserdata/
 Package.resolved
 
 # Compilação e Binários Locais
-vpdf.app/
+vpdf*.app/
+*.app/
 *.o
 *.pcm
 *.dSYM/
