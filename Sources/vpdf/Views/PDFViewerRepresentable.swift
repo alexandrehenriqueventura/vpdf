@@ -6,10 +6,19 @@ import PDFKit
 public struct PDFViewerRepresentable: NSViewRepresentable {
     public let document: PDFDocument?
     public var searchText: String
+    @Binding public var scaleFactor: CGFloat
+    @Binding public var autoScales: Bool
 
-    public init(document: PDFDocument?, searchText: String = "") {
+    public init(
+        document: PDFDocument?,
+        searchText: String = "",
+        scaleFactor: Binding<CGFloat>,
+        autoScales: Binding<Bool>
+    ) {
         self.document = document
         self.searchText = searchText
+        self._scaleFactor = scaleFactor
+        self._autoScales = autoScales
     }
 
     public func makeCoordinator() -> Coordinator {
@@ -18,20 +27,38 @@ public struct PDFViewerRepresentable: NSViewRepresentable {
 
     public func makeNSView(context: Context) -> PDFView {
         let pdfView = PDFView()
-        pdfView.autoScales = true
+        pdfView.autoScales = autoScales
         pdfView.displayMode = .singlePageContinuous
         pdfView.displayDirection = .vertical
         pdfView.displaysPageBreaks = true
         pdfView.backgroundColor = NSColor.windowBackgroundColor
 
-        context.coordinator.pdfView = pdfView
+        context.coordinator.attach(to: pdfView)
         return pdfView
     }
 
     public func updateNSView(_ pdfView: PDFView, context: Context) {
+        context.coordinator.parent = self
+
         if pdfView.document !== document {
             pdfView.document = document
-            pdfView.autoScales = true
+            if autoScales {
+                pdfView.autoScales = true
+            }
+        }
+
+        // Sincroniza estado de Zoom
+        if autoScales {
+            if !pdfView.autoScales {
+                pdfView.autoScales = true
+            }
+        } else {
+            if pdfView.autoScales {
+                pdfView.autoScales = false
+            }
+            if abs(pdfView.scaleFactor - scaleFactor) > 0.01 {
+                pdfView.scaleFactor = scaleFactor
+            }
         }
 
         // Busca e destaque de texto no PDF
@@ -55,9 +82,37 @@ public struct PDFViewerRepresentable: NSViewRepresentable {
         var parent: PDFViewerRepresentable
         weak var pdfView: PDFView?
         var lastSearchQuery: String = ""
+        private var isUpdatingFromNotification = false
 
         init(_ parent: PDFViewerRepresentable) {
             self.parent = parent
+        }
+
+        deinit {
+            NotificationCenter.default.removeObserver(self)
+        }
+
+        func attach(to view: PDFView) {
+            self.pdfView = view
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(pdfScaleChanged(_:)),
+                name: .PDFViewScaleChanged,
+                object: view
+            )
+        }
+
+        @objc private func pdfScaleChanged(_ notification: Notification) {
+            guard let view = pdfView else { return }
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                if abs(self.parent.scaleFactor - view.scaleFactor) > 0.01 {
+                    self.parent.scaleFactor = view.scaleFactor
+                }
+                if self.parent.autoScales != view.autoScales {
+                    self.parent.autoScales = view.autoScales
+                }
+            }
         }
     }
 }

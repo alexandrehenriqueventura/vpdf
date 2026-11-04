@@ -7,17 +7,21 @@ public enum ConversionFormat: String, CaseIterable, Identifiable, Sendable {
     case md
     case rtf
     case html
+    case docx
+    case doc
     case pdf
 
     public var id: String { rawValue }
 
     public var displayName: String {
         switch self {
-        case .txt: return "TXT (Texto Simples)"
-        case .md:  return "Markdown"
-        case .rtf: return "RTF (Rich Text)"
+        case .txt:  return "TXT (Texto Simples)"
+        case .md:   return "Markdown"
+        case .rtf:  return "RTF (Rich Text)"
         case .html: return "HTML5"
-        case .pdf: return "PDF"
+        case .docx: return "Word (.docx)"
+        case .doc:  return "Word 97-2004 (.doc)"
+        case .pdf:  return "PDF"
         }
     }
 
@@ -27,11 +31,13 @@ public enum ConversionFormat: String, CaseIterable, Identifiable, Sendable {
 
     public var uniformType: UTType {
         switch self {
-        case .txt: return .plainText
-        case .md:  return .init(filenameExtension: "md") ?? .plainText
-        case .rtf: return .rtf
+        case .txt:  return .plainText
+        case .md:   return .init(filenameExtension: "md") ?? .plainText
+        case .rtf:  return .rtf
         case .html: return .html
-        case .pdf: return .pdf
+        case .docx: return UTType("org.openxmlformats.wordprocessingml.document") ?? .data
+        case .doc:  return UTType("com.microsoft.word.doc") ?? .data
+        case .pdf:  return .pdf
         }
     }
 
@@ -42,6 +48,8 @@ public enum ConversionFormat: String, CaseIterable, Identifiable, Sendable {
         case "md", "markdown": return .md
         case "rtf": return .rtf
         case "html", "htm": return .html
+        case "docx": return .docx
+        case "doc": return .doc
         case "pdf": return .pdf
         default: return nil
         }

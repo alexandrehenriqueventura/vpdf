@@ -99,11 +99,27 @@ public struct ContentView: View {
             if viewModel.selectedItem != nil {
                 VStack(spacing: 0) {
                     if let pdfDoc = viewModel.pdfDocument {
-                        PDFViewerRepresentable(
-                            document: pdfDoc,
-                            searchText: viewModel.searchText
-                        )
-                        .background(Color(NSColor.windowBackgroundColor))
+                        ZStack(alignment: .bottom) {
+                            PDFViewerRepresentable(
+                                document: pdfDoc,
+                                searchText: viewModel.searchText,
+                                scaleFactor: $viewModel.pdfScaleFactor,
+                                autoScales: $viewModel.pdfAutoScales
+                            )
+                            .background(Color(NSColor.windowBackgroundColor))
+
+                            // Barra flutuante elegante de zoom
+                            PDFZoomControlBar(
+                                scaleFactor: $viewModel.pdfScaleFactor,
+                                autoScales: $viewModel.pdfAutoScales,
+                                onZoomIn: { viewModel.zoomIn() },
+                                onZoomOut: { viewModel.zoomOut() },
+                                onResetZoom: { viewModel.resetZoom() },
+                                onZoomToFit: { viewModel.setZoomToFit() },
+                                onSetZoomScale: { scale in viewModel.setZoomScale(scale) }
+                            )
+                            .padding(.bottom, 16)
+                        }
                     } else {
                         HStack(spacing: 0) {
                             Spacer(minLength: 0)
@@ -142,11 +158,14 @@ public struct ContentView: View {
                     )
                 }
             } else {
-                EmptyStateView {
-                    Task {
-                        await viewModel.openFolder()
+                EmptyStateView(
+                    onOpenFolder: {
+                        Task { await viewModel.openFolder() }
+                    },
+                    onConvertWord: {
+                        Task { await viewModel.convertWordFileToPDF() }
                     }
-                }
+                )
             }
         }
         .toolbar {
@@ -160,6 +179,14 @@ public struct ContentView: View {
                 }
                 .keyboardShortcut("o", modifiers: [.command, .shift])
                 .help("Abrir uma pasta no disco (⇧⌘O)")
+
+                // Converter Word para PDF
+                Button {
+                    Task { await viewModel.convertWordFileToPDF() }
+                } label: {
+                    Label("Converter Word (.docx) para PDF", systemImage: "doc.badge.arrow.up")
+                }
+                .help("Selecionar e converter arquivo Word (.docx / .doc) para PDF")
 
                 // Salvar Arquivo Atual
                 Button {

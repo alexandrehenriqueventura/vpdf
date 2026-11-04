@@ -30,6 +30,9 @@ public final class ConversionService: Sendable {
             case .html:
                 return try self.convertToHTML(text: text, title: documentTitle, from: sourceFormat)
 
+            case .docx, .doc:
+                return try self.convertToDocx(text: text, from: sourceFormat)
+
             case .pdf:
                 return try self.convertToPDF(text: text, title: documentTitle, from: sourceFormat)
             }
@@ -66,6 +69,20 @@ public final class ConversionService: Sendable {
             )
         } catch {
             throw AppError.conversionFailed("Erro na geração do RTF: \(error.localizedDescription)")
+        }
+    }
+
+    /// Conversão para Word (.docx) via NSAttributedString nativo
+    public func convertToDocx(text: String, from sourceFormat: ConversionFormat) throws -> Data {
+        let attributedString = buildAttributedString(from: text, format: sourceFormat)
+        do {
+            let range = NSRange(location: 0, length: attributedString.length)
+            return try attributedString.data(
+                from: range,
+                documentAttributes: [.documentType: NSAttributedString.DocumentType.officeOpenXML]
+            )
+        } catch {
+            throw AppError.conversionFailed("Erro na exportação para Word (.docx): \(error.localizedDescription)")
         }
     }
 
@@ -162,6 +179,28 @@ public final class ConversionService: Sendable {
         return data
     }
 
+    /// Converte um documento Word (.docx ou .doc) para PDF preservando a formatação do texto.
+    public func convertWordToPDF(data: Data, format: ConversionFormat) throws -> Data {
+        let docType: NSAttributedString.DocumentType
+        switch format {
+        case .doc:
+            docType = .docFormat
+        default:
+            docType = .officeOpenXML
+        }
+
+        do {
+            let attr = try NSAttributedString(
+                data: data,
+                options: [.documentType: docType],
+                documentAttributes: nil
+            )
+            return try renderAttributedStringToPDF(attr)
+        } catch {
+            throw AppError.conversionFailed("Falha ao processar arquivo Word (\(format.rawValue)): \(error.localizedDescription)")
+        }
+    }
+
     /// Conversão para PDF (.pdf) via CoreText e PDFKit com suporte a paginação A4
     public func convertToPDF(
         text: String,
@@ -169,6 +208,11 @@ public final class ConversionService: Sendable {
         from sourceFormat: ConversionFormat
     ) throws -> Data {
         let attr = buildAttributedString(from: text, format: sourceFormat)
+        return try renderAttributedStringToPDF(attr)
+    }
+
+    /// Renderiza qualquer NSAttributedString em um PDF A4 de múltiplas páginas com CoreText.
+    public func renderAttributedStringToPDF(_ attr: NSAttributedString) throws -> Data {
         let pdfData = NSMutableData()
 
         // Padrão A4: 595.2 x 841.8 pontos a 72 dpi

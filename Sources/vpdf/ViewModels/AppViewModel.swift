@@ -23,6 +23,10 @@ public final class AppViewModel {
     public var isDirty: Bool = false
     public var isLoading: Bool = false
 
+    // MARK: - Estado de Zoom do Visualizador PDF
+    public var pdfScaleFactor: CGFloat = 1.0
+    public var pdfAutoScales: Bool = true
+
     // MARK: - Estado de Busca
     public var searchText: String = ""
 
@@ -166,6 +170,8 @@ public final class AppViewModel {
 
                 self.selectedItem = item
                 self.pdfDocument = pdfDoc
+                self.pdfAutoScales = true
+                self.pdfScaleFactor = 1.0
                 self.documentText = extractedText.trimmingCharacters(in: .newlines)
                 self.detectedEncoding = .utf8
                 self.detectedEncodingName = "PDF (\(pdfDoc.pageCount) pág\(pdfDoc.pageCount == 1 ? "" : "s"))"
@@ -282,5 +288,82 @@ public final class AppViewModel {
     public func presentError(_ error: AppError) {
         self.activeError = error
         self.showErrorAlert = true
+    }
+
+    // MARK: - Ações de Zoom do PDF
+
+    public func zoomIn() {
+        pdfAutoScales = false
+        pdfScaleFactor = min(pdfScaleFactor * 1.25, 5.0)
+    }
+
+    public func zoomOut() {
+        pdfAutoScales = false
+        pdfScaleFactor = max(pdfScaleFactor / 1.25, 0.25)
+    }
+
+    public func resetZoom() {
+        pdfAutoScales = false
+        pdfScaleFactor = 1.0
+    }
+
+    public func setZoomToFit() {
+        pdfAutoScales = true
+    }
+
+    public func setZoomScale(_ scale: CGFloat) {
+        pdfAutoScales = false
+        pdfScaleFactor = max(0.25, min(scale, 5.0))
+    }
+
+    // MARK: - Conversão Nativa de Arquivos Word (.docx / .doc) para PDF
+
+    /// Abre diálogo nativo para selecionar um arquivo Word (.docx ou .doc), converte para PDF e abre na tela.
+    public func convertWordFileToPDF() async {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = [
+            UTType("org.openxmlformats.wordprocessingml.document") ?? .data,
+            UTType("com.microsoft.word.doc") ?? .data
+        ]
+        panel.prompt = "Converter para PDF"
+        panel.message = "Selecione um arquivo Word (.docx ou .doc) para converter:"
+
+        guard panel.runModal() == .OK, let wordURL = panel.url else { return }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            let data = try await fileSystemService.readFileData(at: wordURL)
+            let ext = wordURL.pathExtension.lowercased()
+            let format: ConversionFormat = (ext == "doc") ? .doc : .docx
+            let pdfData = try conversionService.convertWordToPDF(data: data, format: format)
+
+            // Salva o arquivo .pdf no mesmo diretório de origem
+            let targetURL = wordURL.deletingPathExtension().appendingPathExtension("pdf")
+            try pdfData.write(to: targetURL, options: .atomic)
+
+            // Se estiver dentro da pasta aberta na barra lateral, atualiza a árvore
+            if let root = rootURL {
+                await loadRootItems(for: root)
+            }
+
+            // Exibe imediatamente o PDF convertido no visualizador
+            if let generatedDoc = PDFDocument(data: pdfData) {
+                self.selectedItem = FileItem(url: targetURL, isDirectory: false)
+                self.pdfDocument = generatedDoc
+                self.pdfAutoScales = true
+                self.pdfScaleFactor = 1.0
+                self.detectedEncodingName = "PDF (\(generatedDoc.pageCount) pág\(generatedDoc.pageCount == 1 ? "" : "s"))"
+                self.isDirty = false
+            }
+        } catch let appError as AppError {
+            presentError(appError)
+        } catch {
+            presentError(.conversionFailed("Falha na conversão de \(wordURL.lastPathComponent): \(error.localizedDescription)"))
+        }
     }
 }

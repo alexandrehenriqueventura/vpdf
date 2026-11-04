@@ -20,6 +20,7 @@
 		B5D5D9AF757E4FA189717B70 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DD093E92C7B486FA4356030 /* EmptyStateView.swift */; };
 		94B49FA872A84364A5838043 /* StatusBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D8FFBA5895549B7BA0B2493 /* StatusBarView.swift */; };
 		70D78782BABE43B99FD5A8A2 /* FileRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC7BFBE253AA43A282EB86C9 /* FileRowView.swift */; };
+		A1B2C3D4E5F60718293A4B5C /* PDFZoomControlBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A10718293A4B5D /* PDFZoomControlBar.swift */; };
 		F4ACB61D0F7B4F91B1C29305 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67C1CBC20C5248E6BE7A6ED1 /* ContentView.swift */; };
 /* End PBXBuildFile section */
 
@@ -38,6 +39,7 @@
 		1DD093E92C7B486FA4356030 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Views/EmptyStateView.swift; sourceTree = "<group>"; };
 		3D8FFBA5895549B7BA0B2493 /* StatusBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Views/StatusBarView.swift; sourceTree = "<group>"; };
 		EC7BFBE253AA43A282EB86C9 /* FileRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Views/FileRowView.swift; sourceTree = "<group>"; };
+		B2C3D4E5F6A10718293A4B5D /* PDFZoomControlBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Views/PDFZoomControlBar.swift; sourceTree = "<group>"; };
 		67C1CBC20C5248E6BE7A6ED1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Views/ContentView.swift; sourceTree = "<group>"; };
 		A4CD2AAAC94C4C68B4826243 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Sources/vpdf/Resources/Info.plist; sourceTree = "<group>"; };
 		1CE5ECF4EC6C40569C2B7473 /* vpdf.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sources/vpdf/Resources/vpdf.entitlements; sourceTree = "<group>"; };
@@ -70,6 +72,7 @@
 				1DD093E92C7B486FA4356030 /* EmptyStateView.swift */,
 				3D8FFBA5895549B7BA0B2493 /* StatusBarView.swift */,
 				EC7BFBE253AA43A282EB86C9 /* FileRowView.swift */,
+				B2C3D4E5F6A10718293A4B5D /* PDFZoomControlBar.swift */,
 				67C1CBC20C5248E6BE7A6ED1 /* ContentView.swift */,
 				A4CD2AAAC94C4C68B4826243 /* Info.plist */,
 				1CE5ECF4EC6C40569C2B7473 /* vpdf.entitlements */,
@@ -154,6 +157,7 @@
 				B5D5D9AF757E4FA189717B70 /* EmptyStateView.swift in Sources */,
 				94B49FA872A84364A5838043 /* StatusBarView.swift in Sources */,
 				70D78782BABE43B99FD5A8A2 /* FileRowView.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5C /* PDFZoomControlBar.swift in Sources */,
 				F4ACB61D0F7B4F91B1C29305 /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

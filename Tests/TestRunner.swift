@@ -143,8 +143,26 @@ struct TestRunner {
         assertTrue(multiDoc.pageCount > 1, "Deve gerar mais de 1 página A4 (gerou \(multiDoc.pageCount))")
         print("  ✓ testMultiPagePDFConversion (\(multiDoc.pageCount) páginas) passou")
 
+        // 13. DOCX para PDF
+        let wordOriginalText = "Capítulo de Demonstração Word (.docx)\nEste documento foi gerado e convertido nativamente para PDF no macOS."
+        let wordAttr = NSAttributedString(string: wordOriginalText, attributes: [
+            .font: NSFont.systemFont(ofSize: 14)
+        ])
+        let wordDocxData = try wordAttr.data(
+            from: NSRange(location: 0, length: wordAttr.length),
+            documentAttributes: [.documentType: NSAttributedString.DocumentType.officeOpenXML]
+        )
+        let wordPdfData = try conversionService.convertWordToPDF(data: wordDocxData, format: .docx)
+        assertTrue(!wordPdfData.isEmpty, "Dados do PDF gerado a partir do Word não devem ser vazios")
+        guard let wordPdfDoc = PDFDocument(data: wordPdfData) else {
+            fatalError("PDF gerado a partir de DOCX é inválido")
+        }
+        assertTrue(wordPdfDoc.pageCount >= 1)
+        assertTrue(wordPdfDoc.page(at: 0)?.string?.contains("Demonstração Word") ?? false)
+        print("  ✓ testWordDocxToPDFConversion (\(wordPdfDoc.pageCount) página) passou")
+
         print("\n========================================")
-        print("TODOS OS 12 TESTES PASSARAM COM SUCESSO! 🎉")
+        print("TODOS OS 13 TESTES PASSARAM COM SUCESSO! 🎉")
         print("========================================")
     }
 }

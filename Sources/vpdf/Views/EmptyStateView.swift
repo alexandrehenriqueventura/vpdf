@@ -3,9 +3,11 @@ import SwiftUI
 /// Tela exibida na área de detalhe quando nenhum arquivo estiver selecionado.
 public struct EmptyStateView: View {
     public var onOpenFolder: () -> Void
+    public var onConvertWord: (() -> Void)?
 
-    public init(onOpenFolder: @escaping () -> Void) {
+    public init(onOpenFolder: @escaping () -> Void, onConvertWord: (() -> Void)? = nil) {
         self.onOpenFolder = onOpenFolder
+        self.onConvertWord = onConvertWord
     }
 
     public var body: some View {
@@ -27,21 +29,34 @@ public struct EmptyStateView: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(.primary)
 
-                Text("Selecione um arquivo de texto na barra lateral para ler, editar e converter, ou abra um novo diretório.")
+                Text("Selecione um arquivo PDF na barra lateral para leitura, ou converta documentos Word (.docx) diretamente.")
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 380)
             }
 
-            Button(action: onOpenFolder) {
-                Label("Abrir Pasta...", systemImage: "folder")
-                    .font(.system(size: 13, weight: .medium))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
+            HStack(spacing: 12) {
+                Button(action: onOpenFolder) {
+                    Label("Abrir Pasta...", systemImage: "folder")
+                        .font(.system(size: 13, weight: .medium))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.regular)
+
+                if let onConvertWord = onConvertWord {
+                    Button(action: onConvertWord) {
+                        Label("Converter Word (.docx) para PDF", systemImage: "doc.badge.arrow.up")
+                            .font(.system(size: 13, weight: .medium))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.regular)
+                }
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.regular)
 
             Spacer()
 

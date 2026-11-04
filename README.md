@@ -33,16 +33,21 @@
 
 ## ✨ Principais Funcionalidades
 
-- **Visualizador Nativo de PDF (PDFKit)**:
+- **Visualizador Nativo de PDF (PDFKit) com Barra de Zoom Elegante**:
   - Renderização vetorial cristalina com suporte a páginas contínuas, zoom fluído e seleção de texto nativa do macOS.
+  - **Barra de Zoom Flutuante (Glassmorphism)**: Controle em cápsula translúcida (`.ultraThinMaterial`) com botões de zoom in/out (`⌘+` / `⌘-`), slider contínuo, menu de escalas rápidas (50%, 75%, 100%, 150%, 200%, 300%) e botão de ajuste automático à largura da janela (`⇧⌘0`).
   - Rolagem suave com alta performance, mesmo em documentos com centenas de páginas.
   - Busca de termos integrada no PDF com salto automático para a primeira ocorrência e destaque de resultados.
+- **Conversor Nativo de Documentos Word (.docx e .doc) para PDF**:
+  - Conversão instantânea de arquivos Microsoft Word (`.docx` e `.doc`) diretamente para `.pdf` paginado em padrão A4 via `NSAttributedString` e `CoreText`, sem depender de LibreOffice ou bibliotecas externas.
+  - Acessível diretamente pelo botão na barra de ferramentas ou na tela inicial do app.
 - **Barra Lateral com Árvore de Diretórios (NavigationSplitView)**:
   - Listagem inteligente filtrada **exclusivamente para arquivos PDF e pastas**, eliminando ruídos visuais de mídias ou arquivos não suportados.
   - Carregamento preguiçoso (*lazy loading* assíncrono) que carrega o conteúdo de subpastas apenas quando o usuário as expande.
   - Suporte ao atalho nativo do macOS para recolher/expandir a barra lateral (`⌃⌘S`).
 - **Conversão de Documentos (ConversionService)**:
-  - Converte o conteúdo textual extraído do PDF aberto para outros formatos:
+  - Converte documentos entre múltiplos formatos:
+    - **Word (.docx)**: Documento do Microsoft Word gerado nativamente via `officeOpenXML`.
     - **TXT**: Texto simples formatado em UTF-8.
     - **RTF**: Documento com cabeçalho RTF válido (`{\rtf1`) via `NSAttributedString`.
     - **HTML5**: Documento autocontido com CSS tipográfico responsivo (*dark/light mode*).
