@@ -40,11 +40,16 @@
 
 ## ✨ Principais Funcionalidades
 
-- **Visualizador Nativo de PDF (PDFKit) com Barra de Zoom Elegante**:
+- **Visualizador Nativo de PDF (PDFKit) com Barra de Zoom e Paginação Elegante**:
   - Renderização vetorial cristalina com suporte a páginas contínuas, zoom fluído e seleção de texto nativa do macOS.
-  - **Barra de Zoom Flutuante (Glassmorphism)**: Controle em cápsula translúcida (`.ultraThinMaterial`) com botões de zoom in/out (`⌘+` / `⌘-`), slider contínuo, menu de escalas rápidas (50%, 75%, 100%, 150%, 200%, 300%) e botão de ajuste automático à largura da janela (`⇧⌘0`).
+  - **Barra de Zoom e Paginação Flutuante (Glassmorphism)**: Controle em cápsula translúcida (`.ultraThinMaterial`) com:
+    - Indicador dinâmico de página atual e total (ex: **`1 de 100`**) em tipografia tabular monospaçada (`monospacedDigit()`), perfeitamente integrado sem deformar o design da barra.
+    - Botões de zoom in/out (`⌘+` / `⌘-`), slider contínuo de escala, menu de escalas rápidas (50%, 75%, 100%, 150%, 200%, 300%) e botão de ajuste automático à largura da janela (`⇧⌘0`).
   - Rolagem suave com alta performance, mesmo em documentos com centenas de páginas.
   - Busca de termos integrada no PDF com salto automático para a primeira ocorrência e destaque de resultados.
+- **Conversão Avançada de PDF para Word (.docx e .doc) Preservando Formatação**:
+  - Ao converter de PDF para Word, o motor do `vpdf` extrai a árvore tipográfica rica de cada página (`PDFPage.attributedString`), preservando **tamanhos de fonte originais (títulos, subtítulos, corpo), pesos (negrito/itálico), cores de texto e separação de parágrafos**, sem achatar o conteúdo para texto puro.
+  - Normalização inteligente de fontes de sistema para fontes padrão de mercado (como Helvetica/Arial) para total compatibilidade com o Microsoft Word em qualquer plataforma.
 - **Conversor Nativo de Documentos Word (.docx e .doc) para PDF**:
   - Conversão instantânea de arquivos Microsoft Word (`.docx` e `.doc`) diretamente para `.pdf` paginado em padrão A4 via `NSAttributedString` e `CoreText`, sem depender de LibreOffice ou bibliotecas externas.
   - Acessível diretamente pelo botão na barra de ferramentas ou na tela inicial do app.
@@ -162,7 +167,7 @@ open vpdf.app
 3. Pressione `⌘R` para executar com depuração interativa.
 
 ### 3. Executando os Testes Unitários
-O projeto inclui **13 testes unitários automatizados** validando detecção de codificação, paginação A4 vetorial e conversão de Word `.docx`:
+O projeto inclui **14 testes unitários automatizados** validando detecção de codificação, paginação A4 vetorial, conversão bidirecional Word ↔ PDF e preservação de estilos tipográficos:
 
 ```bash
 ./run_tests.sh
@@ -189,9 +194,10 @@ INICIANDO SUÍTES DE TESTES UNITÁRIOS
   ✓ testPDFConversion (1 página) passou
   ✓ testMultiPagePDFConversion (9 páginas) passou
   ✓ testWordDocxToPDFConversion (1 página) passou
+  ✓ testPDFToWordDocxPreservingFormatting passou
 
 ========================================
-TODOS OS 13 TESTES PASSARAM COM SUCESSO! 🎉
+TODOS OS 14 TESTES PASSARAM COM SUCESSO! 🎉
 ========================================
 ```
 

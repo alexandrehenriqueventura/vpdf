@@ -104,14 +104,18 @@ public struct ContentView: View {
                                 document: pdfDoc,
                                 searchText: viewModel.searchText,
                                 scaleFactor: $viewModel.pdfScaleFactor,
-                                autoScales: $viewModel.pdfAutoScales
+                                autoScales: $viewModel.pdfAutoScales,
+                                currentPage: $viewModel.pdfCurrentPage,
+                                totalPages: $viewModel.pdfTotalPages
                             )
                             .background(Color(NSColor.windowBackgroundColor))
 
-                            // Barra flutuante elegante de zoom
+                            // Barra flutuante elegante de zoom e página (ex: "1 de 100")
                             PDFZoomControlBar(
                                 scaleFactor: $viewModel.pdfScaleFactor,
                                 autoScales: $viewModel.pdfAutoScales,
+                                currentPage: viewModel.pdfCurrentPage,
+                                totalPages: viewModel.pdfTotalPages,
                                 onZoomIn: { viewModel.zoomIn() },
                                 onZoomOut: { viewModel.zoomOut() },
                                 onResetZoom: { viewModel.resetZoom() },

@@ -23,9 +23,11 @@ public final class AppViewModel {
     public var isDirty: Bool = false
     public var isLoading: Bool = false
 
-    // MARK: - Estado de Zoom do Visualizador PDF
+    // MARK: - Estado de Zoom e Paginação do Visualizador PDF
     public var pdfScaleFactor: CGFloat = 1.0
     public var pdfAutoScales: Bool = true
+    public var pdfCurrentPage: Int = 1
+    public var pdfTotalPages: Int = 1
 
     // MARK: - Estado de Busca
     public var searchText: String = ""
@@ -172,6 +174,8 @@ public final class AppViewModel {
                 self.pdfDocument = pdfDoc
                 self.pdfAutoScales = true
                 self.pdfScaleFactor = 1.0
+                self.pdfCurrentPage = 1
+                self.pdfTotalPages = max(1, pdfDoc.pageCount)
                 self.documentText = extractedText.trimmingCharacters(in: .newlines)
                 self.detectedEncoding = .utf8
                 self.detectedEncodingName = "PDF (\(pdfDoc.pageCount) pág\(pdfDoc.pageCount == 1 ? "" : "s"))"
@@ -248,12 +252,18 @@ public final class AppViewModel {
         defer { isLoading = false }
 
         do {
-            let data = try await conversionService.convert(
-                text: documentText,
-                from: sourceFormat,
-                to: targetFormat,
-                documentTitle: baseName
-            )
+            let data: Data
+            // Se o documento aberto for um PDF e o destino for Word (.docx / .doc), preserva a formatação original completa
+            if let pdfDoc = self.pdfDocument, (targetFormat == .docx || targetFormat == .doc) {
+                data = try conversionService.convertPDFDocumentToWord(document: pdfDoc, format: targetFormat)
+            } else {
+                data = try await conversionService.convert(
+                    text: documentText,
+                    from: sourceFormat,
+                    to: targetFormat,
+                    documentTitle: baseName
+                )
+            }
 
             promptSaveFile(data: data, defaultFilename: defaultExportName, uniformType: targetFormat.uniformType)
         } catch let appError as AppError {

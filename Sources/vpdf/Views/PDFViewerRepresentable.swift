@@ -8,17 +8,23 @@ public struct PDFViewerRepresentable: NSViewRepresentable {
     public var searchText: String
     @Binding public var scaleFactor: CGFloat
     @Binding public var autoScales: Bool
+    @Binding public var currentPage: Int
+    @Binding public var totalPages: Int
 
     public init(
         document: PDFDocument?,
         searchText: String = "",
         scaleFactor: Binding<CGFloat>,
-        autoScales: Binding<Bool>
+        autoScales: Binding<Bool>,
+        currentPage: Binding<Int>,
+        totalPages: Binding<Int>
     ) {
         self.document = document
         self.searchText = searchText
         self._scaleFactor = scaleFactor
         self._autoScales = autoScales
+        self._currentPage = currentPage
+        self._totalPages = totalPages
     }
 
     public func makeCoordinator() -> Coordinator {
@@ -44,6 +50,12 @@ public struct PDFViewerRepresentable: NSViewRepresentable {
             pdfView.document = document
             if autoScales {
                 pdfView.autoScales = true
+            }
+            if let doc = document {
+                let total = max(1, doc.pageCount)
+                let current = (doc.index(for: pdfView.currentPage ?? doc.page(at: 0) ?? PDFPage())) + 1
+                if totalPages != total { totalPages = total }
+                if currentPage != current { currentPage = max(1, current) }
             }
         }
 
@@ -100,6 +112,28 @@ public struct PDFViewerRepresentable: NSViewRepresentable {
                 name: .PDFViewScaleChanged,
                 object: view
             )
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(pdfPageChanged(_:)),
+                name: .PDFViewPageChanged,
+                object: view
+            )
+        }
+
+        @objc private func pdfPageChanged(_ notification: Notification) {
+            guard let view = pdfView, let doc = view.document, let current = view.currentPage else { return }
+            let pageIndex = doc.index(for: current)
+            let total = max(1, doc.pageCount)
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                let newPage = pageIndex + 1
+                if self.parent.currentPage != newPage {
+                    self.parent.currentPage = newPage
+                }
+                if self.parent.totalPages != total {
+                    self.parent.totalPages = total
+                }
+            }
         }
 
         @objc private func pdfScaleChanged(_ notification: Notification) {

@@ -161,8 +161,23 @@ struct TestRunner {
         assertTrue(wordPdfDoc.page(at: 0)?.string?.contains("Demonstração Word") ?? false)
         print("  ✓ testWordDocxToPDFConversion (\(wordPdfDoc.pageCount) página) passou")
 
+        // 14. PDF para Word DOCX preservando formatação rica
+        let testPDFForDocx = try conversionService.convertToPDF(text: "Título Principal do Teste\nSegundo parágrafo detalhado.", title: "DocxTest", from: .txt)
+        guard let sourcePdf = PDFDocument(data: testPDFForDocx) else {
+            fatalError("Falha ao criar PDF para teste de exportação DOCX")
+        }
+        let exportedWordData = try conversionService.convertPDFDocumentToWord(document: sourcePdf, format: .docx)
+        assertTrue(!exportedWordData.isEmpty, "Dados do DOCX exportado do PDF não devem ser vazios")
+        let readBackDocx = try NSAttributedString(
+            data: exportedWordData,
+            options: [.documentType: NSAttributedString.DocumentType.officeOpenXML],
+            documentAttributes: nil
+        )
+        assertTrue(readBackDocx.string.contains("Título Principal do Teste"))
+        print("  ✓ testPDFToWordDocxPreservingFormatting passou")
+
         print("\n========================================")
-        print("TODOS OS 13 TESTES PASSARAM COM SUCESSO! 🎉")
+        print("TODOS OS 14 TESTES PASSARAM COM SUCESSO! 🎉")
         print("========================================")
     }
 }

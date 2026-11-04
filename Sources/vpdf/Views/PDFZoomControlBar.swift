@@ -4,6 +4,8 @@ import SwiftUI
 public struct PDFZoomControlBar: View {
     @Binding public var scaleFactor: CGFloat
     @Binding public var autoScales: Bool
+    public var currentPage: Int
+    public var totalPages: Int
 
     public var onZoomIn: () -> Void
     public var onZoomOut: () -> Void
@@ -14,6 +16,8 @@ public struct PDFZoomControlBar: View {
     public init(
         scaleFactor: Binding<CGFloat>,
         autoScales: Binding<Bool>,
+        currentPage: Int = 1,
+        totalPages: Int = 1,
         onZoomIn: @escaping () -> Void,
         onZoomOut: @escaping () -> Void,
         onResetZoom: @escaping () -> Void,
@@ -22,6 +26,8 @@ public struct PDFZoomControlBar: View {
     ) {
         self._scaleFactor = scaleFactor
         self._autoScales = autoScales
+        self.currentPage = currentPage
+        self.totalPages = totalPages
         self.onZoomIn = onZoomIn
         self.onZoomOut = onZoomOut
         self.onResetZoom = onResetZoom
@@ -36,6 +42,18 @@ public struct PDFZoomControlBar: View {
 
     public var body: some View {
         HStack(spacing: 8) {
+            // Indicador de Página (ex: "1 de 100")
+            Text("\(currentPage) de \(totalPages)")
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 4)
+
+            // Separador vertical sutil
+            Divider()
+                .frame(height: 14)
+                .opacity(0.4)
+
             // Botão Reduzir Zoom (-)
             Button {
                 onZoomOut()

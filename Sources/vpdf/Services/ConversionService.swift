@@ -86,6 +86,85 @@ public final class ConversionService: Sendable {
         }
     }
 
+    /// Converte um PDFDocument diretamente para Word (.docx / .doc) preservando ao máximo
+    /// a formatação original: tamanhos de fontes individuais, estilos (negrito, itálico),
+    /// cores de texto, quebras de linha e separação de parágrafos.
+    public func convertPDFDocumentToWord(
+        document: PDFDocument,
+        format: ConversionFormat
+    ) throws -> Data {
+        let combined = NSMutableAttributedString()
+
+        for pageIndex in 0..<document.pageCount {
+            guard let page = document.page(at: pageIndex) else { continue }
+
+            if let pageAttr = page.attributedString, pageAttr.length > 0 {
+                let normalized = normalizeFontsForExport(pageAttr)
+                combined.append(normalized)
+            } else if let pageString = page.string, !pageString.isEmpty {
+                let fallbackAttr = buildAttributedString(from: pageString, format: .txt)
+                combined.append(fallbackAttr)
+            }
+
+            // Insere quebra limpa entre páginas sucessivas
+            if pageIndex < document.pageCount - 1 {
+                let pageBreak = NSAttributedString(
+                    string: "\n\n",
+                    attributes: [
+                        .font: NSFont.systemFont(ofSize: 11)
+                    ]
+                )
+                combined.append(pageBreak)
+            }
+        }
+
+        guard combined.length > 0 else {
+            throw AppError.conversionFailed("O documento PDF não possui texto selecionável para conversão.")
+        }
+
+        let docType: NSAttributedString.DocumentType = (format == .doc) ? .docFormat : .officeOpenXML
+
+        do {
+            let range = NSRange(location: 0, length: combined.length)
+            return try combined.data(
+                from: range,
+                documentAttributes: [.documentType: docType]
+            )
+        } catch {
+            throw AppError.conversionFailed("Erro na exportação do PDF para Word: \(error.localizedDescription)")
+        }
+    }
+
+    /// Normaliza nomes de fontes internas do macOS para tipografia universal (Helvetica/Arial),
+    /// preservando rigorosamente o tamanho exato em pontos (pointSize), negrito, itálico e cores.
+    private func normalizeFontsForExport(_ attr: NSAttributedString) -> NSAttributedString {
+        let result = NSMutableAttributedString(attributedString: attr)
+        let fullRange = NSRange(location: 0, length: result.length)
+
+        result.enumerateAttribute(.font, in: fullRange, options: []) { value, range, _ in
+            guard let font = value as? NSFont else { return }
+            let isBold = font.fontDescriptor.symbolicTraits.contains(.bold)
+            let isItalic = font.fontDescriptor.symbolicTraits.contains(.italic)
+            let size = max(6.0, font.pointSize)
+
+            var normalizedFont: NSFont
+            if isBold && isItalic {
+                normalizedFont = NSFontManager.shared.font(withFamily: "Helvetica", traits: [.boldFontMask, .italicFontMask], weight: 7, size: size) ?? font
+            } else if isBold {
+                normalizedFont = NSFontManager.shared.font(withFamily: "Helvetica", traits: .boldFontMask, weight: 7, size: size) ?? font
+            } else if isItalic {
+                normalizedFont = NSFontManager.shared.font(withFamily: "Helvetica", traits: .italicFontMask, weight: 5, size: size) ?? font
+            } else {
+                normalizedFont = NSFont(name: "Helvetica", size: size) ?? font
+            }
+
+            result.removeAttribute(.font, range: range)
+            result.addAttribute(.font, value: normalizedFont, range: range)
+        }
+
+        return result
+    }
+
     /// Conversão para HTML5 (.html) autocontido com CSS refinado
     public func convertToHTML(
         text: String,
