@@ -85,29 +85,30 @@ vpdf/
 │       ├── App.swift                # Ponto de entrada do aplicativo (@main)
 │       ├── Models/
 │       │   ├── AppError.swift       # Erros de aplicação amigáveis
-│       │   ├── ConversionFormat.swift # Formatos suportados (PDF, TXT, MD, RTF, HTML)
+│       │   ├── ConversionFormat.swift # Formatos suportados (PDF, Word DOCX/DOC, TXT, MD, RTF, HTML)
 │       │   └── FileItem.swift       # Modelo de arquivo/pasta na árvore
 │       ├── Services/
 │       │   ├── FileSystemService.swift # Sandboxing, Bookmarks e navegação em disco
 │       │   ├── EncodingService.swift   # Detecção precisa de codificação de texto
-│       │   └── ConversionService.swift # Motores de conversão (CoreText, RTF, HTML5)
+│       │   └── ConversionService.swift # Motores de conversão (CoreText, Word DOCX, RTF, HTML5)
 │       ├── ViewModels/
 │       │   └── AppViewModel.swift   # Estado reativo e orquestração MVVM
 │       ├── Views/
 │       │   ├── ContentView.swift    # NavigationSplitView, Toolbar e área de leitura
-│       │   ├── PDFViewerRepresentable.swift # Ponte para o PDFView nativo
+│       │   ├── PDFViewerRepresentable.swift # Ponte para o PDFView nativo com sincronização de zoom
+│       │   ├── PDFZoomControlBar.swift      # Barra flutuante translúcida de controle de zoom
 │       │   ├── TextEditorRepresentable.swift# Ponte para NSTextView
-│       │   ├── EmptyStateView.swift # Tela de boas-vindas quando nenhum PDF está aberto
+│       │   ├── EmptyStateView.swift # Tela de boas-vindas com botão de conversão rápida
 │       │   ├── FileRowView.swift    # Linha de exibição de itens na barra lateral
 │       │   └── StatusBarView.swift  # Rodapé com metadados do documento
 │       └── Resources/
 │           ├── Info.plist           # Metadados e identificação do bundle macOS
 │           └── vpdf.entitlements    # Permissões do App Sandbox
 └── Tests/
-    ├── TestRunner.swift             # Runner de testes via linha de comando
+    ├── TestRunner.swift             # Runner de testes via linha de comando (13 testes)
     └── vpdfTests/
         ├── EncodingServiceTests.swift   # Testes de detecção de codificação
-        └── ConversionServiceTests.swift # Testes de conversão e paginação A4
+        └── ConversionServiceTests.swift # Testes de conversão, paginação A4 e Word DOCX
 ```
 
 ---
@@ -121,6 +122,10 @@ vpdf/
 | **`⇧⌘E`** | Exportar documento no formato selecionado |
 | **`⌘F`** | Buscar termo no documento PDF |
 | **`⌃⌘S`** | Recolher / expandir barra lateral |
+| **`⌘+`** / **`⌘=`** | Aumentar zoom do visualizador de PDF |
+| **`⌘-`** | Reduzir zoom do visualizador de PDF |
+| **`⌘0`** | Redefinir zoom para o tamanho real (100%) |
+| **`⇧⌘0`** | Ajustar zoom automaticamente à largura da janela (*Fit*) |
 
 ---
 
@@ -150,7 +155,7 @@ open vpdf.app
 3. Pressione `⌘R` para executar com depuração interativa.
 
 ### 3. Executando os Testes Unitários
-O projeto inclui 12 testes unitários automatizados validando codificação e conversão de formatos:
+O projeto inclui **13 testes unitários automatizados** validando detecção de codificação, paginação A4 vetorial e conversão de Word `.docx`:
 
 ```bash
 ./run_tests.sh
@@ -176,9 +181,10 @@ INICIANDO SUÍTES DE TESTES UNITÁRIOS
   ✓ testHTMLConversion passou
   ✓ testPDFConversion (1 página) passou
   ✓ testMultiPagePDFConversion (9 páginas) passou
+  ✓ testWordDocxToPDFConversion (1 página) passou
 
 ========================================
-TODOS OS 12 TESTES PASSARAM COM SUCESSO! 🎉
+TODOS OS 13 TESTES PASSARAM COM SUCESSO! 🎉
 ========================================
 ```
 
