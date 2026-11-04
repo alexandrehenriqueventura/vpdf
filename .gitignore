@@ -20,3 +20,4 @@ vpdf.app/
 *.o
 *.pcm
 *.dSYM/
+*.zip

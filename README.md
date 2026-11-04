@@ -1,9 +1,33 @@
 # vpdf — Leitor e Conversor de Arquivos PDF para macOS
 
 <p align="center">
+  <a href="https://github.com/alexandrehenriqueventura/vpdf/releases/latest">
+    <img src="https://img.shields.io/github/v/release/alexandrehenriqueventura/vpdf?color=007AFF&label=Download%20v1.0.0" alt="Download Release">
+  </a>
+  <img src="https://img.shields.io/badge/macOS-14.0%2B-000000?logo=apple" alt="macOS 14+">
+  <img src="https://img.shields.io/badge/Swift-5.9%2B-FA7343?logo=swift" alt="Swift 5.9+">
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License">
+</p>
+
+<p align="center">
   <b>Aplicativo nativo para macOS (14.0+ Sonoma / Sequoia) desenvolvido em Swift 5.9+ e SwiftUI.</b><br>
   Leitor de PDFs focado em agilidade, navegação hierárquica por pastas e conversão de documentos com estética limpa inspirada nas diretrizes de design do macOS (<i>Apple Human Interface Guidelines</i>).
 </p>
+
+<p align="center">
+  👉 <b><a href="https://github.com/alexandrehenriqueventura/vpdf/releases/download/v1.0.0/vpdf-macos.zip">Baixar Versão Pré-compilada (vpdf-macos.zip)</a></b> 👈
+</p>
+
+---
+
+## ⚡️ Instalação Rápida (Sem Compilar)
+
+1. Baixe o **[vpdf-macos.zip](https://github.com/alexandrehenriqueventura/vpdf/releases/download/v1.0.0/vpdf-macos.zip)** na aba de Releases.
+2. Dê um duplo clique para descompactar o arquivo **`vpdf.app`**.
+3. Arraste para a sua pasta **Aplicativos** (`/Applications`) e abra!
+
+> **Dica para o primeiro acesso (macOS Gatekeeper):**
+> Por se tratar de um app de código aberto com assinatura local (*ad-hoc*), se o macOS mostrar o aviso de desenvolvedor não identificado, basta clicar com o **botão direito (ou Control + Clique)** sobre o `vpdf.app`, escolher **"Abrir"** e confirmar em **"Abrir"**.
 
 ---
 
