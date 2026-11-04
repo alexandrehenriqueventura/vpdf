@@ -1,0 +1,37 @@
+#!/bin/bash
+set -e
+
+echo "🔨 Compilando vpdf para macOS..."
+
+APP_NAME="vpdf"
+APP_BUNDLE="${APP_NAME}.app"
+BUILD_DIR="${TMPDIR:-/tmp}/vpdf_build"
+CACHE_DIR="${TMPDIR:-/tmp}/clang-cache"
+
+mkdir -p "$BUILD_DIR"
+mkdir -p "$CACHE_DIR"
+
+swiftc -module-cache-path "$CACHE_DIR" \
+    -plugin-path /Library/Developer/CommandLineTools/usr/lib/swift/host/plugins \
+    Sources/vpdf/Models/*.swift \
+    Sources/vpdf/Services/*.swift \
+    Sources/vpdf/ViewModels/*.swift \
+    Sources/vpdf/Views/*.swift \
+    Sources/vpdf/App.swift \
+    -o "$BUILD_DIR/$APP_NAME"
+
+echo "📦 Montando pacote $APP_BUNDLE..."
+mkdir -p "$APP_BUNDLE/Contents/MacOS"
+mkdir -p "$APP_BUNDLE/Contents/Resources"
+
+cp "$BUILD_DIR/$APP_NAME" "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
+cp Sources/vpdf/Resources/Info.plist "$APP_BUNDLE/Contents/Info.plist"
+chmod +x "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
+
+echo "🔐 Assinando com App Sandbox e Security-Scoped Bookmarks..."
+codesign -s - --force --deep --entitlements Sources/vpdf/Resources/vpdf.entitlements "$APP_BUNDLE"
+
+echo "================================================="
+echo "✅ Aplicativo compilado e assinado com sucesso!"
+echo "👉 Para abrir agora mesmo, execute: open $APP_BUNDLE"
+echo "================================================="

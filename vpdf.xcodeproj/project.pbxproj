@@ -1,0 +1,267 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		879572A7926441AE97A867D4 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8328100701BC46DEBD88AA75 /* App.swift */; };
+		6834AA4730E449CBA45D5893 /* ConversionFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC0A943B9674DEDA212BA6C /* ConversionFormat.swift */; };
+		FA1486F479FD4887AE7F9DE2 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E05CC1EE1964B2882A1FEAC /* AppError.swift */; };
+		E1EE862E9C884217BD7FA4E8 /* FileItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 540481BA39D84BB49EE4C221 /* FileItem.swift */; };
+		862AFC60D86C4091B5C18C8A /* EncodingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE3DC04EF2974618A7CDE996 /* EncodingService.swift */; };
+		7C0109C72FC445F18D507E6B /* FileSystemService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60A2415987144CCBA2AA268 /* FileSystemService.swift */; };
+		10ED8E2A80D84E99A2DBB5CF /* ConversionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78D2ADEF1DBC49639A3309CB /* ConversionService.swift */; };
+		0FE8247941A24954BC915036 /* AppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E250CD59DED4F1299B39A96 /* AppViewModel.swift */; };
+		C68B1263935946999F872662 /* PDFViewerRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FEEB887B7649E7967CE4ED /* PDFViewerRepresentable.swift */; };
+		1D7FE435FD7B498C98A75AC0 /* TextEditorRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F76B1D46ECF74008A3374A6C /* TextEditorRepresentable.swift */; };
+		B5D5D9AF757E4FA189717B70 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DD093E92C7B486FA4356030 /* EmptyStateView.swift */; };
+		94B49FA872A84364A5838043 /* StatusBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D8FFBA5895549B7BA0B2493 /* StatusBarView.swift */; };
+		70D78782BABE43B99FD5A8A2 /* FileRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC7BFBE253AA43A282EB86C9 /* FileRowView.swift */; };
+		F4ACB61D0F7B4F91B1C29305 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67C1CBC20C5248E6BE7A6ED1 /* ContentView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0016A19B008B411B94A435E5 /* vpdf.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = vpdf.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8328100701BC46DEBD88AA75 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/App.swift; sourceTree = "<group>"; };
+		6AC0A943B9674DEDA212BA6C /* ConversionFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Models/ConversionFormat.swift; sourceTree = "<group>"; };
+		9E05CC1EE1964B2882A1FEAC /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Models/AppError.swift; sourceTree = "<group>"; };
+		540481BA39D84BB49EE4C221 /* FileItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Models/FileItem.swift; sourceTree = "<group>"; };
+		DE3DC04EF2974618A7CDE996 /* EncodingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Services/EncodingService.swift; sourceTree = "<group>"; };
+		F60A2415987144CCBA2AA268 /* FileSystemService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Services/FileSystemService.swift; sourceTree = "<group>"; };
+		78D2ADEF1DBC49639A3309CB /* ConversionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Services/ConversionService.swift; sourceTree = "<group>"; };
+		6E250CD59DED4F1299B39A96 /* AppViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/ViewModels/AppViewModel.swift; sourceTree = "<group>"; };
+		97FEEB887B7649E7967CE4ED /* PDFViewerRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Views/PDFViewerRepresentable.swift; sourceTree = "<group>"; };
+		F76B1D46ECF74008A3374A6C /* TextEditorRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Views/TextEditorRepresentable.swift; sourceTree = "<group>"; };
+		1DD093E92C7B486FA4356030 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Views/EmptyStateView.swift; sourceTree = "<group>"; };
+		3D8FFBA5895549B7BA0B2493 /* StatusBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Views/StatusBarView.swift; sourceTree = "<group>"; };
+		EC7BFBE253AA43A282EB86C9 /* FileRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Views/FileRowView.swift; sourceTree = "<group>"; };
+		67C1CBC20C5248E6BE7A6ED1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Views/ContentView.swift; sourceTree = "<group>"; };
+		A4CD2AAAC94C4C68B4826243 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Sources/vpdf/Resources/Info.plist; sourceTree = "<group>"; };
+		1CE5ECF4EC6C40569C2B7473 /* vpdf.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sources/vpdf/Resources/vpdf.entitlements; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FAB016D4F2C2454D90C44F06 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		BBA06FE292304FCD9BF57CAA = {
+			isa = PBXGroup;
+			children = (
+				8328100701BC46DEBD88AA75 /* App.swift */,
+				6AC0A943B9674DEDA212BA6C /* ConversionFormat.swift */,
+				9E05CC1EE1964B2882A1FEAC /* AppError.swift */,
+				540481BA39D84BB49EE4C221 /* FileItem.swift */,
+				DE3DC04EF2974618A7CDE996 /* EncodingService.swift */,
+				F60A2415987144CCBA2AA268 /* FileSystemService.swift */,
+				78D2ADEF1DBC49639A3309CB /* ConversionService.swift */,
+				6E250CD59DED4F1299B39A96 /* AppViewModel.swift */,
+				97FEEB887B7649E7967CE4ED /* PDFViewerRepresentable.swift */,
+				F76B1D46ECF74008A3374A6C /* TextEditorRepresentable.swift */,
+				1DD093E92C7B486FA4356030 /* EmptyStateView.swift */,
+				3D8FFBA5895549B7BA0B2493 /* StatusBarView.swift */,
+				EC7BFBE253AA43A282EB86C9 /* FileRowView.swift */,
+				67C1CBC20C5248E6BE7A6ED1 /* ContentView.swift */,
+				A4CD2AAAC94C4C68B4826243 /* Info.plist */,
+				1CE5ECF4EC6C40569C2B7473 /* vpdf.entitlements */,
+				A9EE936758F64969B550D74B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A9EE936758F64969B550D74B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0016A19B008B411B94A435E5 /* vpdf.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B496F91675804987A2715798 /* vpdf */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6EA117A022694F84B46D52C9 /* Build configuration list for PBXNativeTarget "vpdf" */;
+			buildPhases = (
+				9F50105E3F344DD8BE1839DD /* Sources */,
+				FAB016D4F2C2454D90C44F06 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = vpdf;
+			productName = vpdf;
+			productReference = 0016A19B008B411B94A435E5 /* vpdf.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3D9725C9FC544EEF8CD84854 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1520;
+				TargetAttributes = {
+					B496F91675804987A2715798 = {
+						CreatedOnToolsVersion = 15.2;
+					};
+				};
+			};
+			buildConfigurationList = 9D8AC35CF06D4E8BB98F75EC /* Build configuration list for PBXProject "vpdf" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = BBA06FE292304FCD9BF57CAA;
+			productRefGroup = A9EE936758F64969B550D74B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B496F91675804987A2715798 /* vpdf */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9F50105E3F344DD8BE1839DD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				879572A7926441AE97A867D4 /* App.swift in Sources */,
+				6834AA4730E449CBA45D5893 /* ConversionFormat.swift in Sources */,
+				FA1486F479FD4887AE7F9DE2 /* AppError.swift in Sources */,
+				E1EE862E9C884217BD7FA4E8 /* FileItem.swift in Sources */,
+				862AFC60D86C4091B5C18C8A /* EncodingService.swift in Sources */,
+				7C0109C72FC445F18D507E6B /* FileSystemService.swift in Sources */,
+				10ED8E2A80D84E99A2DBB5CF /* ConversionService.swift in Sources */,
+				0FE8247941A24954BC915036 /* AppViewModel.swift in Sources */,
+				C68B1263935946999F872662 /* PDFViewerRepresentable.swift in Sources */,
+				1D7FE435FD7B498C98A75AC0 /* TextEditorRepresentable.swift in Sources */,
+				B5D5D9AF757E4FA189717B70 /* EmptyStateView.swift in Sources */,
+				94B49FA872A84364A5838043 /* StatusBarView.swift in Sources */,
+				70D78782BABE43B99FD5A8A2 /* FileRowView.swift in Sources */,
+				F4ACB61D0F7B4F91B1C29305 /* ContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		B0326A8B35E640F391CCEDB2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		925BF29BD1BE481A85DE9EE1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		3F54F466D67D490289B34BD0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Sources/vpdf/Resources/vpdf.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/vpdf/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alexandrehventura.vpdf;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		464A04C9CD344D6785E8E57C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Sources/vpdf/Resources/vpdf.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/vpdf/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alexandrehventura.vpdf;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		9D8AC35CF06D4E8BB98F75EC /* Build configuration list for PBXProject "vpdf" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B0326A8B35E640F391CCEDB2 /* Debug */,
+				925BF29BD1BE481A85DE9EE1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6EA117A022694F84B46D52C9 /* Build configuration list for PBXNativeTarget "vpdf" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3F54F466D67D490289B34BD0 /* Debug */,
+				464A04C9CD344D6785E8E57C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 3D9725C9FC544EEF8CD84854 /* Project object */;
+}

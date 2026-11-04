@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+*/.DS_Store
+
+# Xcode
+build/
+*.build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# Compilação e Binários Locais
+vpdf.app/
+*.o
+*.pcm
+*.dSYM/
