@@ -1,0 +1,85 @@
+name: CI & Build Release
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: 'Publicar / Atualizar Release no GitHub?'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-build:
+    name: Testar e Compilar (macOS 14 Sonoma)
+    runs-on: macos-14
+    steps:
+      - name: 📥 Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: 🔍 Diagnóstico do Ambiente Swift & Xcode
+        run: |
+          echo "=== macOS Version ==="
+          sw_vers
+          echo "=== Swift Version ==="
+          swift --version
+          echo "=== Xcode Path ==="
+          xcode-select -p
+
+      - name: 🧪 Executar Suíte de Testes Unitários
+        run: |
+          chmod +x ./run_tests.sh
+          ./run_tests.sh
+
+      - name: 🔨 Compilar Aplicativo (vpdf.app)
+        run: |
+          chmod +x ./build_app.sh
+          ./build_app.sh
+
+      - name: 🔐 Verificar Assinatura de Código e Entitlements
+        run: |
+          codesign --verify --deep --strict vpdf.app
+          codesign -d --entitlements - vpdf.app
+
+      - name: 📦 Gerar Pacote Compactado (.zip)
+        run: |
+          zip -r -y vpdf-macos.zip vpdf.app
+          ls -lh vpdf-macos.zip
+
+      - name: 🚀 Fazer Upload do Artefato de Compilação
+        uses: actions/upload-artifact@v4
+        with:
+          name: vpdf-macos-app
+          path: vpdf-macos.zip
+          retention-days: 14
+
+  release:
+    name: Publicar Release no GitHub
+    needs: test-and-build
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.publish_release == true)
+    runs-on: macos-14
+    permissions:
+      contents: write
+    steps:
+      - name: 📥 Baixar Artefato Compilado
+        uses: actions/download-artifact@v4
+        with:
+          name: vpdf-macos-app
+          path: ./
+
+      - name: 🏷️ Criar ou Atualizar Release no GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          files: vpdf-macos.zip
+          generate_release_notes: true
+          draft: false
+          prerelease: false

@@ -5,6 +5,9 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/alexandrehenriqueventura/vpdf/actions/workflows/ci.yml">
+    <img src="https://github.com/alexandrehenriqueventura/vpdf/actions/workflows/ci.yml/badge.svg" alt="CI Status">
+  </a>
   <a href="https://github.com/alexandrehenriqueventura/vpdf/releases/latest">
     <img src="https://img.shields.io/github/v/release/alexandrehenriqueventura/vpdf?color=007AFF&label=Download%20v1.0.0" alt="Download Release">
   </a>

@@ -11,8 +11,16 @@ CACHE_DIR="${TMPDIR:-/tmp}/clang-cache"
 mkdir -p "$BUILD_DIR"
 mkdir -p "$CACHE_DIR"
 
+# Detecta o caminho dos plugins de macros do Swift (compatível com CLT local e GitHub Actions)
+PLUGIN_FLAG=""
+if [ -d "/Library/Developer/CommandLineTools/usr/lib/swift/host/plugins" ]; then
+    PLUGIN_FLAG="-plugin-path /Library/Developer/CommandLineTools/usr/lib/swift/host/plugins"
+elif [ -d "$(xcode-select -p)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins" ]; then
+    PLUGIN_FLAG="-plugin-path $(xcode-select -p)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins"
+fi
+
 swiftc -module-cache-path "$CACHE_DIR" \
-    -plugin-path /Library/Developer/CommandLineTools/usr/lib/swift/host/plugins \
+    $PLUGIN_FLAG \
     Sources/vpdf/Models/*.swift \
     Sources/vpdf/Services/*.swift \
     Sources/vpdf/ViewModels/*.swift \
