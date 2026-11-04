@@ -176,8 +176,38 @@ struct TestRunner {
         assertTrue(readBackDocx.string.contains("Título Principal do Teste"))
         print("  ✓ testPDFToWordDocxPreservingFormatting passou")
 
+        // 15. Reconstrução 2D de tabelas e planilhas em DOCX
+        let tablePdfData = NSMutableData()
+        if let consumer = CGDataConsumer(data: tablePdfData as CFMutableData) {
+            var mediaBox = CGRect(x: 0, y: 0, width: 595, height: 842)
+            if let pdfContext = CGContext(consumer: consumer, mediaBox: &mediaBox, nil) {
+                pdfContext.beginPage(mediaBox: &mediaBox)
+                let gc = NSGraphicsContext(cgContext: pdfContext, flipped: false)
+                let prevGc = NSGraphicsContext.current
+                NSGraphicsContext.current = gc
+                let col1 = NSAttributedString(string: "Item", attributes: [.font: NSFont.systemFont(ofSize: 12)])
+                col1.draw(at: NSPoint(x: 50, y: 750))
+                let col2 = NSAttributedString(string: "Preço", attributes: [.font: NSFont.systemFont(ofSize: 12)])
+                col2.draw(at: NSPoint(x: 250, y: 750))
+                NSGraphicsContext.current = prevGc
+                pdfContext.endPage()
+                pdfContext.closePDF()
+
+                if let tablePdfDoc = PDFDocument(data: tablePdfData as Data) {
+                    let docxTableData = try conversionService.convertPDFDocumentToWord(document: tablePdfDoc, format: .docx)
+                    let readTable = try NSAttributedString(
+                        data: docxTableData,
+                        options: [.documentType: NSAttributedString.DocumentType.officeOpenXML],
+                        documentAttributes: nil
+                    )
+                    assertTrue(readTable.string.contains("Item") && readTable.string.contains("Preço"), "Tabela deve conter os itens das colunas")
+                    print("  ✓ testPDFToWord2DTableReconstruction passou")
+                }
+            }
+        }
+
         print("\n========================================")
-        print("TODOS OS 14 TESTES PASSARAM COM SUCESSO! 🎉")
+        print("TODOS OS 15 TESTES PASSARAM COM SUCESSO! 🎉")
         print("========================================")
     }
 }

@@ -86,9 +86,10 @@ public final class ConversionService: Sendable {
         }
     }
 
-    /// Converte um PDFDocument diretamente para Word (.docx / .doc) preservando ao máximo
-    /// a formatação original: tamanhos de fontes individuais, estilos (negrito, itálico),
-    /// cores de texto, quebras de linha e separação de parágrafos.
+    /// Converte um PDFDocument diretamente para Word (.docx / .doc) reconstruindo a estrutura 2D:
+    /// - Reconstitui tabelas, planilhas e calendários com colunas alinhadas via tabulações (`\t`).
+    /// - Elimina quebras artificiais de linhas no meio de parágrafos, permitindo fluxo contínuo.
+    /// - Preserva hierarquia de fontes (títulos, subtítulos, corpo), pesos (negrito/itálico) e cores.
     public func convertPDFDocumentToWord(
         document: PDFDocument,
         format: ConversionFormat
@@ -98,15 +99,19 @@ public final class ConversionService: Sendable {
         for pageIndex in 0..<document.pageCount {
             guard let page = document.page(at: pageIndex) else { continue }
 
-            if let pageAttr = page.attributedString, pageAttr.length > 0 {
-                let normalized = normalizeFontsForExport(pageAttr)
+            let pageStructuredAttr = extractStructuredContentFromPDFPage(page)
+            if pageStructuredAttr.length > 0 {
+                let normalized = normalizeFontsForExport(pageStructuredAttr)
+                combined.append(normalized)
+            } else if let fallback = page.attributedString, fallback.length > 0 {
+                let normalized = normalizeFontsForExport(fallback)
                 combined.append(normalized)
             } else if let pageString = page.string, !pageString.isEmpty {
                 let fallbackAttr = buildAttributedString(from: pageString, format: .txt)
                 combined.append(fallbackAttr)
             }
 
-            // Insere quebra limpa entre páginas sucessivas
+            // Insere quebra limpa de página entre páginas sucessivas
             if pageIndex < document.pageCount - 1 {
                 let pageBreak = NSAttributedString(
                     string: "\n\n",
@@ -133,6 +138,119 @@ public final class ConversionService: Sendable {
         } catch {
             throw AppError.conversionFailed("Erro na exportação do PDF para Word: \(error.localizedDescription)")
         }
+    }
+
+    /// Reconstrói o layout bidimensional (2D) de uma página de PDF:
+    /// identifica tabelas/planilhas colunares e mescla linhas de parágrafos fluidamente.
+    private func extractStructuredContentFromPDFPage(_ page: PDFPage) -> NSAttributedString {
+        struct LineBlock {
+            let text: String
+            let bounds: CGRect
+            let attributedString: NSAttributedString?
+        }
+
+        let totalChars = page.numberOfCharacters
+        guard totalChars > 0 else { return NSAttributedString() }
+
+        var lineBlocks: [LineBlock] = []
+
+        // 1. Identifica os blocos de texto geométricos via selectionForLine
+        for i in 0..<totalChars {
+            let b = page.characterBounds(at: i)
+            guard b.width > 0 && b.height > 0 else { continue }
+            let pt = CGPoint(x: b.midX, y: b.midY)
+            if let sel = page.selectionForLine(at: pt), let s = sel.string, !s.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                let sb = sel.bounds(for: page)
+                let alreadyAdded = lineBlocks.contains { existing in
+                    abs(existing.bounds.origin.x - sb.origin.x) < 1.0 &&
+                    abs(existing.bounds.origin.y - sb.origin.y) < 1.0 &&
+                    abs(existing.bounds.width - sb.width) < 1.0
+                }
+                if !alreadyAdded {
+                    lineBlocks.append(LineBlock(text: s, bounds: sb, attributedString: sel.attributedString))
+                }
+            }
+        }
+
+        guard !lineBlocks.isEmpty else { return NSAttributedString() }
+
+        // 2. Agrupa em linhas horizontais pelo eixo Y (do topo da página para a base)
+        let yTolerance: CGFloat = 4.5
+        var rows: [[LineBlock]] = []
+        let sortedBlocks = lineBlocks.sorted { a, b in
+            if abs(a.bounds.midY - b.bounds.midY) <= yTolerance {
+                return a.bounds.minX < b.bounds.minX
+            }
+            return a.bounds.midY > b.bounds.midY
+        }
+
+        for block in sortedBlocks {
+            if let rIdx = rows.indices.first(where: {
+                guard let first = rows[$0].first else { return false }
+                return abs(first.bounds.midY - block.bounds.midY) <= yTolerance
+            }) {
+                rows[rIdx].append(block)
+            } else {
+                rows.append([block])
+            }
+        }
+
+        for i in 0..<rows.count {
+            rows[i].sort { $0.bounds.minX < $1.bounds.minX }
+        }
+
+        // 3. Monta o texto atribuído separando colunas por tabulação e fluidificando parágrafos
+        let resultAttr = NSMutableAttributedString()
+
+        for (rIdx, row) in rows.enumerated() {
+            let rowAttr = NSMutableAttributedString()
+            let isTable = row.count > 1
+
+            for (bIdx, block) in row.enumerated() {
+                if bIdx > 0 {
+                    rowAttr.append(NSAttributedString(string: "\t"))
+                }
+                if let a = block.attributedString {
+                    rowAttr.append(a)
+                } else {
+                    rowAttr.append(NSAttributedString(string: block.text))
+                }
+            }
+
+            // Para linhas de tabela/planilha, define tabStops regulares para alinhamento uniforme no Word
+            if isTable {
+                let style = NSMutableParagraphStyle()
+                var tabs: [NSTextTab] = []
+                for colIndex in 1...16 {
+                    tabs.append(NSTextTab(type: .leftTabStopType, location: CGFloat(colIndex * 70)))
+                }
+                style.tabStops = tabs
+                rowAttr.addAttribute(.paragraphStyle, value: style, range: NSRange(location: 0, length: rowAttr.length))
+            }
+
+            resultAttr.append(rowAttr)
+
+            // 4. Decisão de quebra de linha vs continuação de parágrafo
+            if rIdx < rows.count - 1 {
+                let nextRow = rows[rIdx + 1]
+                let currentY = row.first?.bounds.midY ?? 0
+                let nextY = nextRow.first?.bounds.midY ?? 0
+                let vGap = currentY - nextY
+                let isNextTable = nextRow.count > 1
+                let rowText = row.map { $0.text }.joined(separator: " ").trimmingCharacters(in: .whitespaces)
+                let endsWithPunct = [".", "!", "?", ":", ";"].contains(where: { rowText.hasSuffix($0) })
+
+                // Mantém quebra de linha se for tabela, parágrafo terminado, título ou espaçamento grande
+                if isTable || isNextTable || endsWithPunct || vGap > 22.0 || rowText.count < 35 {
+                    resultAttr.append(NSAttributedString(string: "\n"))
+                } else {
+                    // Texto corrido: une com espaço suave sem quebrar a linha no Word
+                    resultAttr.append(NSAttributedString(string: " "))
+                }
+            }
+        }
+
+        return resultAttr
     }
 
     /// Normaliza nomes de fontes internas do macOS para tipografia universal (Helvetica/Arial),
