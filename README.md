@@ -1,6 +1,10 @@
 # vpdf — Leitor e Conversor de Arquivos PDF para macOS
 
 <p align="center">
+  <img src="Sources/vpdf/Resources/AppIcon.png" width="128" height="128" alt="vpdf App Icon">
+</p>
+
+<p align="center">
   <a href="https://github.com/alexandrehenriqueventura/vpdf/releases/latest">
     <img src="https://img.shields.io/github/v/release/alexandrehenriqueventura/vpdf?color=007AFF&label=Download%20v1.0.0" alt="Download Release">
   </a>

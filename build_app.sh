@@ -26,6 +26,9 @@ mkdir -p "$APP_BUNDLE/Contents/Resources"
 
 cp "$BUILD_DIR/$APP_NAME" "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 cp Sources/vpdf/Resources/Info.plist "$APP_BUNDLE/Contents/Info.plist"
+if [ -f "Sources/vpdf/Resources/AppIcon.icns" ]; then
+    cp Sources/vpdf/Resources/AppIcon.icns "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
+fi
 chmod +x "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 
 echo "🔐 Assinando com App Sandbox e Security-Scoped Bookmarks..."
