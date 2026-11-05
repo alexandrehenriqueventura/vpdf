@@ -146,7 +146,7 @@ struct TestRunner {
         // 13. DOCX para PDF
         let wordOriginalText = "Capítulo de Demonstração Word (.docx)\nEste documento foi gerado e convertido nativamente para PDF no macOS."
         let wordAttr = NSAttributedString(string: wordOriginalText, attributes: [
-            .font: NSFont.systemFont(ofSize: 14)
+            .font: NSFont(name: "Helvetica", size: 14) ?? NSFont.systemFont(ofSize: 14)
         ])
         let wordDocxData = try wordAttr.data(
             from: NSRange(location: 0, length: wordAttr.length),
@@ -185,9 +185,9 @@ struct TestRunner {
                 let gc = NSGraphicsContext(cgContext: pdfContext, flipped: false)
                 let prevGc = NSGraphicsContext.current
                 NSGraphicsContext.current = gc
-                let col1 = NSAttributedString(string: "Item", attributes: [.font: NSFont.systemFont(ofSize: 12)])
+                let col1 = NSAttributedString(string: "Item", attributes: [.font: NSFont(name: "Helvetica", size: 12) ?? NSFont.systemFont(ofSize: 12)])
                 col1.draw(at: NSPoint(x: 50, y: 750))
-                let col2 = NSAttributedString(string: "Preço", attributes: [.font: NSFont.systemFont(ofSize: 12)])
+                let col2 = NSAttributedString(string: "Preço", attributes: [.font: NSFont(name: "Helvetica", size: 12) ?? NSFont.systemFont(ofSize: 12)])
                 col2.draw(at: NSPoint(x: 250, y: 750))
                 NSGraphicsContext.current = prevGc
                 pdfContext.endPage()

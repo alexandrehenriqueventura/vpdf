@@ -55,6 +55,7 @@ public final class AppViewModel {
     private let fileSystemService: FileSystemService
     private let encodingService: EncodingService
     private let conversionService: ConversionService
+    private var fileLoadTask: Task<Void, Never>? = nil
 
     public init(
         fileSystemService: FileSystemService = .shared,
@@ -162,79 +163,94 @@ public final class AppViewModel {
             return
         }
 
+        // Cancela qualquer tarefa de carregamento anterior ainda em execução
+        fileLoadTask?.cancel()
+
         // Se houver alterações pendentes no arquivo anterior, salva automaticamente
         if isDirty, let current = currentLoadedURL, current != item.url {
             await saveCurrentFile()
         }
 
+        let targetURL = item.url
+        let ext = item.fileExtension
+
         isLoading = true
-        defer { isLoading = false }
 
-        do {
-            let data = try await fileSystemService.readFileData(at: item.url)
-            let ext = item.fileExtension
+        fileLoadTask = Task { @MainActor [weak self] in
+            guard let self = self else { return }
+            defer { self.isLoading = false }
 
-            // Extração de texto para documentos PDF
-            if ext == "pdf" {
-                guard let pdfDoc = PDFDocument(data: data) else {
-                    throw AppError.conversionFailed("Documento PDF inválido ou protegido.")
-                }
+            do {
+                let data = try await self.fileSystemService.readFileData(at: targetURL)
+                guard !Task.isCancelled else { return }
 
-                var extractedText = ""
-                for pageIndex in 0..<pdfDoc.pageCount {
-                    if let page = pdfDoc.page(at: pageIndex), let pageString = page.string {
-                        extractedText += pageString + "\n"
+                // Extração e montagem para documentos PDF
+                if ext == "pdf" {
+                    guard let pdfDoc = PDFDocument(data: data) else {
+                        throw AppError.conversionFailed("Documento PDF inválido ou protegido.")
                     }
-                }
 
-                self.currentLoadedURL = item.url
-                self.selectedItem = item
-                self.pdfDocument = pdfDoc
-                self.pdfAutoScales = true
-                self.pdfScaleFactor = 1.0
-                self.pdfCurrentPage = 1
-                self.pdfTotalPages = max(1, pdfDoc.pageCount)
-                self.documentText = extractedText.trimmingCharacters(in: .newlines)
-                self.detectedEncoding = .utf8
-                self.detectedEncodingName = "PDF (\(pdfDoc.pageCount) pág\(pdfDoc.pageCount == 1 ? "" : "s"))"
-                self.isDirty = false
-                return
-            }
+                    var extractedText = ""
+                    for pageIndex in 0..<pdfDoc.pageCount {
+                        guard !Task.isCancelled else { return }
+                        if let page = pdfDoc.page(at: pageIndex), let pageString = page.string {
+                            extractedText += pageString + "\n"
+                        }
+                    }
 
-            // Para outros documentos, limpa o PDF ativo
-            self.pdfDocument = nil
-
-            // Extração de texto para documentos RTF
-            if ext == "rtf" {
-                if let attributedString = try? NSAttributedString(
-                    data: data,
-                    options: [.documentType: NSAttributedString.DocumentType.rtf],
-                    documentAttributes: nil
-                ) {
-                    self.currentLoadedURL = item.url
+                    guard !Task.isCancelled else { return }
+                    self.currentLoadedURL = targetURL
                     self.selectedItem = item
-                    self.documentText = attributedString.string
+                    self.pdfDocument = pdfDoc
+                    self.pdfAutoScales = true
+                    self.pdfScaleFactor = 1.0
+                    self.pdfCurrentPage = 1
+                    self.pdfTotalPages = max(1, pdfDoc.pageCount)
+                    self.documentText = extractedText.trimmingCharacters(in: .newlines)
                     self.detectedEncoding = .utf8
-                    self.detectedEncodingName = "RTF (Rich Text)"
+                    self.detectedEncodingName = "PDF (\(pdfDoc.pageCount) pág\(pdfDoc.pageCount == 1 ? "" : "s"))"
                     self.isDirty = false
                     return
                 }
+
+                // Para outros documentos, limpa o PDF ativo
+                self.pdfDocument = nil
+
+                // Extração de texto para documentos RTF
+                if ext == "rtf" {
+                    if let attributedString = try? NSAttributedString(
+                        data: data,
+                        options: [.documentType: NSAttributedString.DocumentType.rtf],
+                        documentAttributes: nil
+                    ) {
+                        guard !Task.isCancelled else { return }
+                        self.currentLoadedURL = targetURL
+                        self.selectedItem = item
+                        self.documentText = attributedString.string
+                        self.detectedEncoding = .utf8
+                        self.detectedEncodingName = "RTF (Rich Text)"
+                        self.isDirty = false
+                        return
+                    }
+                }
+
+                // Detecção precisa de codificação para arquivos de texto (.txt, .md, .html, etc.)
+                let result = try self.encodingService.decode(data: data)
+                guard !Task.isCancelled else { return }
+
+                self.currentLoadedURL = targetURL
+                self.selectedItem = item
+                self.documentText = result.content
+                self.detectedEncoding = result.encoding
+                self.detectedEncodingName = result.encodingName
+                self.isDirty = false
+            } catch {
+                guard !Task.isCancelled else { return }
+                self.presentError(.permissionDenied(targetURL))
             }
-
-            // Detecção precisa de codificação para arquivos de texto (.txt, .md, .html, etc.)
-            let result = try encodingService.decode(data: data)
-
-            self.currentLoadedURL = item.url
-            self.selectedItem = item
-            self.documentText = result.content
-            self.detectedEncoding = result.encoding
-            self.detectedEncodingName = result.encodingName
-            self.isDirty = false
-        } catch let appError as AppError {
-            presentError(appError)
-        } catch {
-            presentError(.fileNotFound(item.url))
         }
+
+        await fileLoadTask?.value
     }
 
     /// Salva o conteúdo editado no arquivo aberto.

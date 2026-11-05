@@ -154,7 +154,6 @@ public struct ContentView: View {
                 .contentShape(Rectangle())
                 .onTapGesture {
                     viewModel.selectedItem = item
-                    Task { await viewModel.selectFile(item) }
                 }
         }
     }

@@ -116,35 +116,30 @@ public final class FileSystemService: @unchecked Sendable {
             let properties: [URLResourceKey] = [.isDirectoryKey, .isHiddenKey, .nameKey]
             let options: FileManager.DirectoryEnumerationOptions = [.skipsHiddenFiles]
 
-            guard let enumerator = fileManager.enumerator(
+            let fileURLs = try fileManager.contentsOfDirectory(
                 at: url,
                 includingPropertiesForKeys: properties,
                 options: options
-            ) else {
-                throw AppError.permissionDenied(url)
-            }
+            )
 
             var items: [FileItem] = []
 
-            while let fileURL = enumerator.nextObject() as? URL {
-                // Considera apenas filhos diretos (não recursivo no nível atual para manter o carregamento lazy)
-                if fileURL.deletingLastPathComponent().path == url.path {
-                    let resourceValues = try? fileURL.resourceValues(forKeys: Set(properties))
-                    let isDirectory = resourceValues?.isDirectory ?? false
-                    let isHidden = resourceValues?.isHidden ?? false
+            for fileURL in fileURLs {
+                let resourceValues = try? fileURL.resourceValues(forKeys: Set(properties))
+                let isDirectory = resourceValues?.isDirectory ?? false
+                let isHidden = resourceValues?.isHidden ?? false
 
-                    if !isHidden {
-                        // Pastas sempre são exibidas; arquivos apenas se forem formatos de texto/documento suportados
-                        let ext = fileURL.pathExtension.lowercased()
-                        if isDirectory || Self.supportedExtensions.contains(ext) {
-                            let placeholderChildren = isDirectory ? [FileItem.placeholder(for: fileURL)] : nil
-                            items.append(FileItem(
-                                url: fileURL,
-                                isDirectory: isDirectory,
-                                children: placeholderChildren,
-                                isLoaded: false
-                            ))
-                        }
+                if !isHidden {
+                    // Pastas sempre são exibidas; arquivos apenas se forem formatos suportados
+                    let ext = fileURL.pathExtension.lowercased()
+                    if isDirectory || Self.supportedExtensions.contains(ext) {
+                        let placeholderChildren = isDirectory ? [FileItem.placeholder(for: fileURL)] : nil
+                        items.append(FileItem(
+                            url: fileURL,
+                            isDirectory: isDirectory,
+                            children: placeholderChildren,
+                            isLoaded: false
+                        ))
                     }
                 }
             }

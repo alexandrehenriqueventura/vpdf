@@ -116,7 +116,7 @@ public final class ConversionService: Sendable {
                 let pageBreak = NSAttributedString(
                     string: "\n\n",
                     attributes: [
-                        .font: NSFont.systemFont(ofSize: 11)
+                        .font: NSFont(name: "Helvetica", size: 11) ?? NSFont.systemFont(ofSize: 11)
                     ]
                 )
                 combined.append(pageBreak)
@@ -479,7 +479,7 @@ public final class ConversionService: Sendable {
         paragraphStyle.lineSpacing = 4.0
         paragraphStyle.paragraphSpacing = 8.0
 
-        let baseFont = NSFont.systemFont(ofSize: 11.5)
+        let baseFont = NSFont(name: "Helvetica", size: 11.5) ?? NSFont.systemFont(ofSize: 11.5)
         let attributes: [NSAttributedString.Key: Any] = [
             .font: baseFont,
             .foregroundColor: NSColor.textColor,

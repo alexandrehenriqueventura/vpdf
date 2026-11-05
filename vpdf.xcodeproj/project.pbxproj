@@ -22,6 +22,10 @@
 		70D78782BABE43B99FD5A8A2 /* FileRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC7BFBE253AA43A282EB86C9 /* FileRowView.swift */; };
 		A1B2C3D4E5F60718293A4B5C /* PDFZoomControlBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A10718293A4B5D /* PDFZoomControlBar.swift */; };
 		F4ACB61D0F7B4F91B1C29305 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67C1CBC20C5248E6BE7A6ED1 /* ContentView.swift */; };
+		B10100012FC445F18D507E01 /* VPDFView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1010001987144CCBA2AA201 /* VPDFView.swift */; };
+		B10100022FC445F18D507E02 /* PDFAnnotationToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1010002987144CCBA2AA202 /* PDFAnnotationToolbar.swift */; };
+		B10100032FC445F18D507E03 /* PDFPresentationOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1010003987144CCBA2AA203 /* PDFPresentationOverlay.swift */; };
+		B10100042FC445F18D507E04 /* PDFSearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1010004987144CCBA2AA204 /* PDFSearchBar.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +47,10 @@
 		67C1CBC20C5248E6BE7A6ED1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Views/ContentView.swift; sourceTree = "<group>"; };
 		A4CD2AAAC94C4C68B4826243 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Sources/vpdf/Resources/Info.plist; sourceTree = "<group>"; };
 		1CE5ECF4EC6C40569C2B7473 /* vpdf.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Sources/vpdf/Resources/vpdf.entitlements; sourceTree = "<group>"; };
+		F1010001987144CCBA2AA201 /* VPDFView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Views/VPDFView.swift; sourceTree = "<group>"; };
+		F1010002987144CCBA2AA202 /* PDFAnnotationToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Views/PDFAnnotationToolbar.swift; sourceTree = "<group>"; };
+		F1010003987144CCBA2AA203 /* PDFPresentationOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Views/PDFPresentationOverlay.swift; sourceTree = "<group>"; };
+		F1010004987144CCBA2AA204 /* PDFSearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/vpdf/Views/PDFSearchBar.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +82,10 @@
 				EC7BFBE253AA43A282EB86C9 /* FileRowView.swift */,
 				B2C3D4E5F6A10718293A4B5D /* PDFZoomControlBar.swift */,
 				67C1CBC20C5248E6BE7A6ED1 /* ContentView.swift */,
+				F1010001987144CCBA2AA201 /* VPDFView.swift */,
+				F1010002987144CCBA2AA202 /* PDFAnnotationToolbar.swift */,
+				F1010003987144CCBA2AA203 /* PDFPresentationOverlay.swift */,
+				F1010004987144CCBA2AA204 /* PDFSearchBar.swift */,
 				A4CD2AAAC94C4C68B4826243 /* Info.plist */,
 				1CE5ECF4EC6C40569C2B7473 /* vpdf.entitlements */,
 				A9EE936758F64969B550D74B /* Products */,
@@ -159,6 +171,10 @@
 				70D78782BABE43B99FD5A8A2 /* FileRowView.swift in Sources */,
 				A1B2C3D4E5F60718293A4B5C /* PDFZoomControlBar.swift in Sources */,
 				F4ACB61D0F7B4F91B1C29305 /* ContentView.swift in Sources */,
+				B10100012FC445F18D507E01 /* VPDFView.swift in Sources */,
+				B10100022FC445F18D507E02 /* PDFAnnotationToolbar.swift in Sources */,
+				B10100032FC445F18D507E03 /* PDFPresentationOverlay.swift in Sources */,
+				B10100042FC445F18D507E04 /* PDFSearchBar.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

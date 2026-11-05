@@ -127,6 +127,14 @@ vpdf/
 │       │   ├── PDFViewerRepresentable.swift # Ponte para o PDFView nativo com sincronização de zoom
 │       │   ├── PDFZoomControlBar.swift      # Barra flutuante translúcida de controle de zoom
 │       │   ├── TextEditorRepresentable.swift# Ponte para NSTextView
+│       │   ├── ContentView.swift    # Estrutura principal da interface gráfica
+│       │   ├── VPDFView.swift       # Subclasse PDFView com suporte a pt-BR e anotações
+│       │   ├── PDFViewerRepresentable.swift # Ponte SwiftUI para o visualizador vetorial
+│       │   ├── PDFZoomControlBar.swift # Barra flutuante de zoom e paginação
+│       │   ├── PDFSearchBar.swift   # Barra de busca flutuante com contador em tempo real
+│       │   ├── PDFAnnotationToolbar.swift # Ferramentas de marca-texto e seleção
+│       │   ├── PDFPresentationOverlay.swift # Painel flutuante do modo apresentação
+│       │   ├── TextEditorRepresentable.swift # Editor de texto de alta performance
 │       │   ├── EmptyStateView.swift # Tela de boas-vindas com botão de conversão rápida
 │       │   ├── FileRowView.swift    # Linha de exibição de itens na barra lateral
 │       │   └── StatusBarView.swift  # Rodapé com metadados do documento
@@ -134,7 +142,7 @@ vpdf/
 │           ├── Info.plist           # Metadados e identificação do bundle macOS
 │           └── vpdf.entitlements    # Permissões do App Sandbox
 └── Tests/
-    ├── TestRunner.swift             # Runner de testes via linha de comando (13 testes)
+    ├── TestRunner.swift             # Runner de testes via linha de comando (16 testes)
     └── vpdfTests/
         ├── EncodingServiceTests.swift   # Testes de detecção de codificação
         └── ConversionServiceTests.swift # Testes de conversão, paginação A4 e Word DOCX
@@ -146,10 +154,13 @@ vpdf/
 
 | Atalho | Ação |
 | :--- | :--- |
+| **`⇧⌘F`** | Alternar Modo Apresentação em Tela Cheia (Slides) |
+| **`Esc`** | Sair da Apresentação / Fechar Barra de Busca |
 | **`⇧⌘O`** | Abrir nova pasta no disco |
 | **`⌘S`** | Salvar alterações |
 | **`⇧⌘E`** | Exportar documento no formato selecionado |
-| **`⌘F`** | Buscar termo no documento PDF |
+| **`⌘F`** | Abrir barra de busca flutuante no documento |
+| **`↵`** / **`⇧↵`** | Próxima / Anterior ocorrência na busca |
 | **`⌃⌘S`** | Recolher / expandir barra lateral |
 | **`⌘+`** / **`⌘=`** | Aumentar zoom do visualizador de PDF |
 | **`⌘-`** | Reduzir zoom do visualizador de PDF |
@@ -184,7 +195,7 @@ open vpdf.app
 3. Pressione `⌘R` para executar com depuração interativa.
 
 ### 3. Executando os Testes Unitários
-O projeto inclui **14 testes unitários automatizados** validando detecção de codificação, paginação A4 vetorial, conversão bidirecional Word ↔ PDF e preservação de estilos tipográficos:
+O projeto inclui **16 testes unitários automatizados** validando detecção de codificação, paginação A4 vetorial, reconstrução 2D de tabelas, busca e anotações nativas:
 
 ```bash
 ./run_tests.sh
