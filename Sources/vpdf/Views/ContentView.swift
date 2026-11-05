@@ -3,15 +3,14 @@ import AppKit
 import PDFKit
 
 /// Visualização principal do aplicativo vpdf com arquitetura SplitView moderna do macOS 14+ Sonoma.
+@MainActor
 public struct ContentView: View {
     @Bindable public var viewModel: AppViewModel
 
-    @MainActor
     public init(viewModel: AppViewModel) {
         self.viewModel = viewModel
     }
 
-    @MainActor
     public init() {
         self.viewModel = AppViewModel()
     }
