@@ -13,6 +13,7 @@ public final class AppViewModel {
     public var rootURL: URL?
     public var rootItems: [FileItem] = []
     public var selectedItem: FileItem?
+    public private(set) var currentLoadedURL: URL? = nil
     public var columnVisibility: NavigationSplitViewVisibility = .automatic
 
     // MARK: - Estado do Documento Ativo
@@ -102,6 +103,8 @@ public final class AppViewModel {
         }
         self.rootURL = url
         self.selectedItem = nil
+        self.currentLoadedURL = nil
+        self.pdfDocument = nil
         self.documentText = ""
         self.isDirty = false
         await loadRootItems(for: url)
@@ -154,10 +157,13 @@ public final class AppViewModel {
     /// Seleciona e carrega o arquivo na área principal (suporta TXT, MD, RTF, HTML e PDF).
     public func selectFile(_ item: FileItem) async {
         guard !item.isDirectory else { return }
-        if selectedItem?.id == item.id && (pdfDocument != nil || !documentText.isEmpty) { return }
+        // Se o arquivo solicitado JÁ É o que está carregado na memória, não recarrega à toa
+        if currentLoadedURL == item.url && (pdfDocument != nil || !documentText.isEmpty) {
+            return
+        }
 
-        // Se houver alterações pendentes no arquivo atual, salva automaticamente
-        if isDirty, let current = selectedItem, current.id != item.id {
+        // Se houver alterações pendentes no arquivo anterior, salva automaticamente
+        if isDirty, let current = currentLoadedURL, current != item.url {
             await saveCurrentFile()
         }
 
@@ -181,6 +187,7 @@ public final class AppViewModel {
                     }
                 }
 
+                self.currentLoadedURL = item.url
                 self.selectedItem = item
                 self.pdfDocument = pdfDoc
                 self.pdfAutoScales = true
@@ -204,6 +211,7 @@ public final class AppViewModel {
                     options: [.documentType: NSAttributedString.DocumentType.rtf],
                     documentAttributes: nil
                 ) {
+                    self.currentLoadedURL = item.url
                     self.selectedItem = item
                     self.documentText = attributedString.string
                     self.detectedEncoding = .utf8
@@ -216,6 +224,7 @@ public final class AppViewModel {
             // Detecção precisa de codificação para arquivos de texto (.txt, .md, .html, etc.)
             let result = try encodingService.decode(data: data)
 
+            self.currentLoadedURL = item.url
             self.selectedItem = item
             self.documentText = result.content
             self.detectedEncoding = result.encoding
@@ -374,6 +383,7 @@ public final class AppViewModel {
 
             // Exibe imediatamente o PDF convertido no visualizador
             if let generatedDoc = PDFDocument(data: pdfData) {
+                self.currentLoadedURL = targetURL
                 self.selectedItem = FileItem(url: targetURL, isDirectory: false)
                 self.pdfDocument = generatedDoc
                 self.pdfAutoScales = true

@@ -211,6 +211,7 @@ public struct ContentView: View {
                 onDocumentEdited: { viewModel.isDirty = true },
                 onTogglePresentation: { viewModel.togglePresentationMode() }
             )
+            .id(viewModel.currentLoadedURL)
             .background(viewModel.isPresentationMode ? Color.black : Color(NSColor.windowBackgroundColor))
 
             // Se em Modo Apresentação, exibe HUD de slides
