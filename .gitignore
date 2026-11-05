@@ -22,3 +22,4 @@ vpdf*.app/
 *.pcm
 *.dSYM/
 *.zip
+!vpdf-universal-macos13.zip

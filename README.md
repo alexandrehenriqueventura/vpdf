@@ -22,16 +22,20 @@
 </p>
 
 <p align="center">
-  👉 <b><a href="https://github.com/alexandrehenriqueventura/vpdf/releases/download/v1.0.0/vpdf-macos.zip">Baixar Versão Pré-compilada (vpdf-macos.zip)</a></b> 👈
+  👉 <b><a href="https://github.com/alexandrehenriqueventura/vpdf/releases/download/v1.0.0/vpdf-macos.zip">Baixar Versão Pré-compilada (macOS 14+ Sonoma / Sequoia)</a></b> 👈<br>
+  🍏/💻 <b><a href="./vpdf-universal-macos13.zip">Baixar Versão Universal (macOS 13+ Ventura / Intel & Apple Silicon)</a></b>
 </p>
 
 ---
 
 ## ⚡️ Instalação Rápida (Sem Compilar)
 
-1. Baixe o **[vpdf-macos.zip](https://github.com/alexandrehenriqueventura/vpdf/releases/download/v1.0.0/vpdf-macos.zip)** na aba de Releases.
-2. Dê um duplo clique para descompactar o arquivo **`vpdf.app`**.
-3. Arraste para a sua pasta **Aplicativos** (`/Applications`) e abra!
+Escolha a versão correspondente ao seu sistema:
+- **macOS 14+ (Sonoma / Sequoia - Apple Silicon):** Baixe o **[vpdf-macos.zip](https://github.com/alexandrehenriqueventura/vpdf/releases/download/v1.0.0/vpdf-macos.zip)** na aba de Releases.
+- **macOS 13+ (Ventura / Sonoma / Sequoia - Macs Intel e Apple Silicon):** Baixe o arquivo **[`vpdf-universal-macos13.zip`](./vpdf-universal-macos13.zip)** disponível diretamente no repositório.
+
+1. Dê um duplo clique para descompactar o arquivo **`vpdf.app`**.
+2. Arraste para a sua pasta **Aplicativos** (`/Applications`) e abra!
 
 > **Dica para o primeiro acesso (macOS Gatekeeper):**
 > Por se tratar de um app de código aberto com assinatura local (*ad-hoc*), se o macOS mostrar o aviso de desenvolvedor não identificado, basta clicar com o **botão direito (ou Control + Clique)** sobre o `vpdf.app`, escolher **"Abrir"** e confirmar em **"Abrir"**.
