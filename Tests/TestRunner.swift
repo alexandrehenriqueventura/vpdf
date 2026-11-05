@@ -206,8 +206,24 @@ struct TestRunner {
             }
         }
 
+        // 16. Busca de texto e anotações nativas em PDF
+        let searchDocData = try conversionService.convertToPDF(text: "Primeiro Slide de Apresentação.\nContém termos importantes para pesquisa e destaque.", title: "BuscaTest", from: .txt)
+        guard let searchDoc = PDFDocument(data: searchDocData) else {
+            fatalError("Falha ao gerar PDF para teste de busca")
+        }
+        let matches = searchDoc.findString("Slide", withOptions: [.caseInsensitive])
+        assertTrue(matches.count >= 1, "Busca deve encontrar pelo menos 1 ocorrência de 'Slide'")
+        if let firstMatch = matches.first, let page = firstMatch.pages.first {
+            let bounds = firstMatch.bounds(for: page)
+            let annotation = PDFAnnotation(bounds: bounds, forType: .highlight, withProperties: nil)
+            annotation.color = NSColor.yellow
+            page.addAnnotation(annotation)
+            assertTrue(page.annotations.contains(annotation), "Anotação de realce deve ser vinculada à página")
+        }
+        print("  ✓ testPDFSearchAndNativeAnnotations passou")
+
         print("\n========================================")
-        print("TODOS OS 15 TESTES PASSARAM COM SUCESSO! 🎉")
+        print("TODOS OS 16 TESTES PASSARAM COM SUCESSO! 🎉")
         print("========================================")
     }
 }

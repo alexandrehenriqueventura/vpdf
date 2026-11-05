@@ -40,6 +40,23 @@
 
 ## ✨ Principais Funcionalidades
 
+- **Modo Apresentação em Tela Cheia (Slides e Apresentações)**:
+  - Modo dedicado para apresentações com exibição em **Página Única (`.singlePage`)**, eliminando rolagens contínuas e respeitando rigorosamente a quebra de cada slide.
+  - O slide é automaticamente centralizado e ajustado à tela cheia (`autoScales = true`) com fundo imersivo.
+  - Navegação nativa via teclado: Setas (← e →), Espaço e Page Up / Page Down.
+  - Painel flutuante discreto com indicador de slide (**`Slide 3 de 20`**), navegação e atalho `Esc` para retornar ao modo padrão.
+  - Atalho rápido: **`⇧⌘F`** ou botão na barra superior.
+- **Ferramenta de Busca Avançada Integrada**:
+  - Barra de busca suspensa moderna (estilo Safari e Pré-Visualização do macOS) acionada por **`⌘F`**.
+  - Contador de resultados em tempo real (ex.: **`3 de 15`** ou aviso visual caso não haja ocorrências).
+  - Navegação entre ocorrências via botões Anterior (↑) e Próxima (↓) ou teclas `Enter` e `Shift+Enter`.
+  - Destaque colorido imediato de todas as ocorrências na página e rolagem suave até a seleção ativa.
+- **Barra de Ferramentas de Seleção e Marca-Texto (Anotações)**:
+  - Ferramenta de anotação com **Realce em 4 Cores** (Amarelo, Verde, Azul e Rosa), criando marcações nativas no PDF (`PDFAnnotation` persistível).
+  - Ferramentas usuais de texto: **Sublinhar**, **Tachar**, **Copiar seleção (`⌘C`)** e **Remover realces**.
+  - Acionada pelo botão de marca-texto na barra superior.
+- **Menu de Botão Direito (Context Menu) 100% em Português do Brasil**:
+  - Subclasse customizada do `PDFView` com tradução completa de todos os comandos do AppKit para pt-BR: *Copiar*, *Selecionar Tudo*, *Página Única (Slide)*, *Rolagem Contínua*, *Ajustar à Janela*, *Realçar com Cor*, *Sublinhar*, *Tachar*, *Consultar no Dicionário*, entre outros.
 - **Visualizador Nativo de PDF (PDFKit) com Barra de Zoom e Paginação Elegante**:
   - Renderização vetorial cristalina com suporte a páginas contínuas, zoom fluído e seleção de texto nativa do macOS.
   - **Barra de Zoom e Paginação Flutuante (Glassmorphism)**: Controle em cápsula translúcida (`.ultraThinMaterial`) com:

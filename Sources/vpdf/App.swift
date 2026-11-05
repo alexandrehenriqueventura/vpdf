@@ -6,7 +6,7 @@ public struct VpdfApp: App {
 
     public var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(viewModel: AppViewModel())
                 .frame(minWidth: 800, minHeight: 520)
         }
         .windowStyle(.titleBar)

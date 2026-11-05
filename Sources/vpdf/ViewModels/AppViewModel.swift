@@ -29,8 +29,19 @@ public final class AppViewModel {
     public var pdfCurrentPage: Int = 1
     public var pdfTotalPages: Int = 1
 
-    // MARK: - Estado de Busca
+    // MARK: - Estado do Modo Apresentação (Slides / Tela Cheia)
+    public var isPresentationMode: Bool = false
+
+    // MARK: - Estado de Busca Aprimorada
     public var searchText: String = ""
+    public var isSearchPresented: Bool = false
+    public var currentSearchMatchIndex: Int = 0
+    public var totalSearchMatches: Int = 0
+
+    // MARK: - Estado da Barra de Seleção e Anotações
+    public var isAnnotationToolbarPresented: Bool = false
+    public var selectedHighlightColor: HighlightColorOption = .yellow
+    public var activeAnnotationCommand: AnnotationCommand? = nil
 
     // MARK: - Formato de Conversão Selecionado
     public var selectedConversionFormat: ConversionFormat = .pdf
@@ -374,6 +385,87 @@ public final class AppViewModel {
             presentError(appError)
         } catch {
             presentError(.conversionFailed("Falha na conversão de \(wordURL.lastPathComponent): \(error.localizedDescription)"))
+        }
+    }
+
+    // MARK: - Ações do Modo Apresentação (Slides / Tela Cheia)
+
+    public func togglePresentationMode() {
+        isPresentationMode.toggle()
+        if isPresentationMode {
+            columnVisibility = .detailOnly
+            pdfAutoScales = true
+            isSearchPresented = false
+            isAnnotationToolbarPresented = false
+            // Se janela disponível, alterna modo tela cheia
+            if let window = NSApp.keyWindow, !window.styleMask.contains(.fullScreen) {
+                window.toggleFullScreen(nil)
+            }
+        } else {
+            columnVisibility = .automatic
+            if let window = NSApp.keyWindow, window.styleMask.contains(.fullScreen) {
+                window.toggleFullScreen(nil)
+            }
+        }
+    }
+
+    public func nextSlide() {
+        guard let doc = pdfDocument else { return }
+        if pdfCurrentPage < doc.pageCount {
+            pdfCurrentPage += 1
+        }
+    }
+
+    public func previousSlide() {
+        if pdfCurrentPage > 1 {
+            pdfCurrentPage -= 1
+        }
+    }
+
+    // MARK: - Ações da Ferramenta de Busca
+
+    public func toggleSearch() {
+        isSearchPresented.toggle()
+        if !isSearchPresented {
+            closeSearch()
+        }
+    }
+
+    public func closeSearch() {
+        isSearchPresented = false
+        searchText = ""
+        currentSearchMatchIndex = 0
+        totalSearchMatches = 0
+    }
+
+    public func searchNext() {
+        guard totalSearchMatches > 0 else { return }
+        if currentSearchMatchIndex >= totalSearchMatches {
+            currentSearchMatchIndex = 1
+        } else {
+            currentSearchMatchIndex += 1
+        }
+    }
+
+    public func searchPrevious() {
+        guard totalSearchMatches > 0 else { return }
+        if currentSearchMatchIndex <= 1 {
+            currentSearchMatchIndex = totalSearchMatches
+        } else {
+            currentSearchMatchIndex -= 1
+        }
+    }
+
+    // MARK: - Ações de Seleção e Anotações
+
+    public func toggleAnnotationToolbar() {
+        isAnnotationToolbarPresented.toggle()
+    }
+
+    public func applyAnnotation(_ command: AnnotationCommand) {
+        self.activeAnnotationCommand = command
+        if command != .copy {
+            self.isDirty = true
         }
     }
 }
