@@ -63,6 +63,13 @@ public struct ContentView: View {
         } message: { error in
             Text(error.errorDescription ?? "Ocorreu um erro inesperado.")
         }
+        .onChange(of: viewModel.selectedItem) { _, newItem in
+            if let item = newItem, !item.isDirectory {
+                Task {
+                    await viewModel.selectFile(item)
+                }
+            }
+        }
         .navigationTitle(viewModel.selectedItem?.name ?? (viewModel.rootURL?.lastPathComponent ?? "vpdf"))
         .navigationSubtitle(viewModel.selectedItem != nil ? (viewModel.isDirty ? "Modificado" : "Salvo") : "")
     }
@@ -125,13 +132,7 @@ public struct ContentView: View {
             DisclosureGroup {
                 if let children = item.children {
                     ForEach(children) { child in
-                        FileRowView(
-                            item: child,
-                            onExpandDirectory: { dir in
-                                Task { await viewModel.loadChildren(for: dir) }
-                            }
-                        )
-                        .tag(child)
+                        AnyView(renderFileItem(child))
                     }
                 }
             } label: {
@@ -142,10 +143,19 @@ public struct ContentView: View {
                     }
                 )
                 .tag(item)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    Task { await viewModel.loadChildren(for: item) }
+                }
             }
         } else {
             FileRowView(item: item)
                 .tag(item)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    viewModel.selectedItem = item
+                    Task { await viewModel.selectFile(item) }
+                }
         }
     }
 

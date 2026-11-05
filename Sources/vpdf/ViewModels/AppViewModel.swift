@@ -154,10 +154,10 @@ public final class AppViewModel {
     /// Seleciona e carrega o arquivo na área principal (suporta TXT, MD, RTF, HTML e PDF).
     public func selectFile(_ item: FileItem) async {
         guard !item.isDirectory else { return }
-        if selectedItem?.id == item.id { return }
+        if selectedItem?.id == item.id && (pdfDocument != nil || !documentText.isEmpty) { return }
 
         // Se houver alterações pendentes no arquivo atual, salva automaticamente
-        if isDirty, selectedItem != nil {
+        if isDirty, let current = selectedItem, current.id != item.id {
             await saveCurrentFile()
         }
 
