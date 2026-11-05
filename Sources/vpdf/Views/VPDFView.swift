@@ -172,6 +172,41 @@ public final class VPDFView: PDFView {
 
     // MARK: - Tradução Recursiva do Menu AppKit
 
+    private static let menuTranslations: [String: String] = [
+        "Copy": "Copiar",
+        "Select All": "Selecionar Tudo",
+        "Look Up": "Consultar no Dicionário",
+        "Search with Google": "Pesquisar no Google",
+        "Single Page Continuous": "Rolagem Contínua",
+        "Single Page": "Página Única (Slide)",
+        "Two Pages Continuous": "Duas Páginas Contínuas",
+        "Two Pages": "Duas Páginas Lado a Lado",
+        "Actual Size": "Tamanho Real (100%)",
+        "Zoom In": "Aumentar Zoom",
+        "Zoom Out": "Diminuir Zoom",
+        "Zoom to Fit": "Ajustar à Janela",
+        "Go to Page...": "Ir para a Página...",
+        "Next Page": "Próxima Página",
+        "Previous Page": "Página Anterior",
+        "Go to Next Page": "Próxima Página",
+        "Go to Previous Page": "Página Anterior",
+        "First Page": "Primeira Página",
+        "Last Page": "Última Página",
+        "Highlight": "Realçar Texto",
+        "Underline": "Sublinhar",
+        "Strike Out": "Tachar",
+        "Strikethrough": "Tachar",
+        "Print...": "Imprimir...",
+        "Share": "Compartilhar",
+        "Rotate Left": "Girar para a Esquerda",
+        "Rotate Right": "Girar para a Direita",
+        "Open in Preview": "Abrir no Pré-Visualização",
+        "Show Colors": "Mostrar Cores",
+        "Add Note": "Adicionar Nota",
+        "Delete": "Excluir",
+        "Auto Resize": "Ajuste Automático"
+    ]
+
     private func localizeMenu(_ menu: NSMenu) {
         for item in menu.items {
             item.title = translateTitle(item.title)
@@ -182,43 +217,7 @@ public final class VPDFView: PDFView {
     }
 
     private func translateTitle(_ title: String) -> String {
-        // Dicionário de traduções literais e contextuais do PDFView
-        let translations: [String: String] = [
-            "Copy": "Copiar",
-            "Select All": "Selecionar Tudo",
-            "Look Up": "Consultar no Dicionário",
-            "Search with Google": "Pesquisar no Google",
-            "Single Page Continuous": "Rolagem Contínua",
-            "Single Page": "Página Única (Slide)",
-            "Two Pages Continuous": "Duas Páginas Contínuas",
-            "Two Pages": "Duas Páginas Lado a Lado",
-            "Actual Size": "Tamanho Real (100%)",
-            "Zoom In": "Aumentar Zoom",
-            "Zoom Out": "Diminuir Zoom",
-            "Zoom to Fit": "Ajustar à Janela",
-            "Go to Page...": "Ir para a Página...",
-            "Next Page": "Próxima Página",
-            "Previous Page": "Página Anterior",
-            "Go to Next Page": "Próxima Página",
-            "Go to Previous Page": "Página Anterior",
-            "First Page": "Primeira Página",
-            "Last Page": "Última Página",
-            "Highlight": "Realçar Texto",
-            "Underline": "Sublinhar",
-            "Strike Out": "Tachar",
-            "Strikethrough": "Tachar",
-            "Print...": "Imprimir...",
-            "Share": "Compartilhar",
-            "Rotate Left": "Girar para a Esquerda",
-            "Rotate Right": "Girar para a Direita",
-            "Open in Preview": "Abrir no Pré-Visualização",
-            "Show Colors": "Mostrar Cores",
-            "Add Note": "Adicionar Nota",
-            "Delete": "Excluir",
-            "Auto Resize": "Ajuste Automático"
-        ]
-
-        if let direct = translations[title] {
+        if let direct = Self.menuTranslations[title] {
             return direct
         }
 

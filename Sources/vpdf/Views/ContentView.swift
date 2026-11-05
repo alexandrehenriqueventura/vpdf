@@ -173,6 +173,7 @@ public struct ContentView: View {
                 if !viewModel.isPresentationMode {
                     StatusBarView(
                         encodingName: viewModel.detectedEncodingName,
+                        lineEnding: viewModel.lineEnding,
                         wordCount: viewModel.wordCount,
                         charCount: viewModel.charCount,
                         lineCount: viewModel.lineCount,

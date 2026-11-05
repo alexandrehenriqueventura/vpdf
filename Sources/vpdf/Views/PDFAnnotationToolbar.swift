@@ -9,22 +9,23 @@ public enum HighlightColorOption: String, CaseIterable, Identifiable {
 
     public var id: String { rawValue }
 
-    public var color: Color {
+    private var rgbComponents: (r: CGFloat, g: CGFloat, b: CGFloat) {
         switch self {
-        case .yellow: return Color(red: 1.0, green: 0.88, blue: 0.3)
-        case .green: return Color(red: 0.5, green: 0.88, blue: 0.55)
-        case .blue: return Color(red: 0.45, green: 0.75, blue: 1.0)
-        case .pink: return Color(red: 1.0, green: 0.6, blue: 0.72)
+        case .yellow: return (1.0, 0.88, 0.3)
+        case .green: return (0.5, 0.88, 0.55)
+        case .blue: return (0.45, 0.75, 1.0)
+        case .pink: return (1.0, 0.6, 0.72)
         }
     }
 
+    public var color: Color {
+        let (r, g, b) = rgbComponents
+        return Color(red: r, green: g, blue: b)
+    }
+
     public var nsColor: NSColor {
-        switch self {
-        case .yellow: return NSColor(red: 1.0, green: 0.88, blue: 0.3, alpha: 0.55)
-        case .green: return NSColor(red: 0.5, green: 0.88, blue: 0.55, alpha: 0.55)
-        case .blue: return NSColor(red: 0.45, green: 0.75, blue: 1.0, alpha: 0.55)
-        case .pink: return NSColor(red: 1.0, green: 0.6, blue: 0.72, alpha: 0.55)
-        }
+        let (r, g, b) = rgbComponents
+        return NSColor(red: r, green: g, blue: b, alpha: 0.55)
     }
 }
 

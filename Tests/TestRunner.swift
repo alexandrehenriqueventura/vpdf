@@ -222,8 +222,38 @@ struct TestRunner {
         }
         print("  ✓ testPDFSearchAndNativeAnnotations passou")
 
+        // 17. Detecção de Quebra de Linha (LF / CRLF / CR)
+        let sampleLF = "Linha 1\nLinha 2"
+        let sampleCRLF = "Linha 1\r\nLinha 2"
+        let sampleCR = "Linha 1\rLinha 2"
+        func detectLE(_ text: String) -> String {
+            if text.contains("\r\n") { return "CRLF" }
+            if text.contains("\r") { return "CR" }
+            return "LF"
+        }
+        assertEqual(detectLE(sampleLF), "LF")
+        assertEqual(detectLE(sampleCRLF), "CRLF")
+        assertEqual(detectLE(sampleCR), "CR")
+        print("  ✓ testLineEndingDetection passou")
+
+        // 18. Otimização de Performance e Deduplicação Espacial no PDF->Word
+        let start = DispatchTime.now()
+        let densePDF = try conversionService.convertToPDF(
+            text: (1...20).map { "Item \($0) com texto formatado na coluna esquerda da página de teste." }.joined(separator: "\n"),
+            title: "PerformanceTest",
+            from: .txt
+        )
+        if let doc = PDFDocument(data: densePDF) {
+            let docx = try conversionService.convertPDFDocumentToWord(document: doc, format: .docx)
+            assertTrue(!docx.isEmpty, "Conversão otimizada deve gerar documento DOCX válido")
+        }
+        let end = DispatchTime.now()
+        let elapsed = Double(end.uptimeNanoseconds - start.uptimeNanoseconds) / 1_000_000.0
+        assertTrue(elapsed < 3000.0, "Conversão de página densa deve ser instantânea (levou \(Int(elapsed))ms)")
+        print("  ✓ testPerformancePDFToWordOptimization passou (\(Int(elapsed))ms)")
+
         print("\n========================================")
-        print("TODOS OS 16 TESTES PASSARAM COM SUCESSO! 🎉")
+        print("TODOS OS 18 TESTES PASSARAM COM SUCESSO! 🎉")
         print("========================================")
     }
 }

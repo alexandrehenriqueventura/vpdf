@@ -128,17 +128,13 @@ vpdf/
 │       │   └── AppViewModel.swift   # Estado reativo e orquestração MVVM
 │       ├── Views/
 │       │   ├── ContentView.swift    # NavigationSplitView, Toolbar e área de leitura
-│       │   ├── PDFViewerRepresentable.swift # Ponte para o PDFView nativo com sincronização de zoom
-│       │   ├── PDFZoomControlBar.swift      # Barra flutuante translúcida de controle de zoom
-│       │   ├── TextEditorRepresentable.swift# Ponte para NSTextView
-│       │   ├── ContentView.swift    # Estrutura principal da interface gráfica
 │       │   ├── VPDFView.swift       # Subclasse PDFView com suporte a pt-BR e anotações
 │       │   ├── PDFViewerRepresentable.swift # Ponte SwiftUI para o visualizador vetorial
-│       │   ├── PDFZoomControlBar.swift # Barra flutuante de zoom e paginação
+│       │   ├── PDFZoomControlBar.swift # Barra flutuante translúcida de zoom e paginação
 │       │   ├── PDFSearchBar.swift   # Barra de busca flutuante com contador em tempo real
 │       │   ├── PDFAnnotationToolbar.swift # Ferramentas de marca-texto e seleção
 │       │   ├── PDFPresentationOverlay.swift # Painel flutuante do modo apresentação
-│       │   ├── TextEditorRepresentable.swift # Editor de texto de alta performance
+│       │   ├── TextEditorRepresentable.swift # Editor de texto nativo com NSTextView
 │       │   ├── EmptyStateView.swift # Tela de boas-vindas com botão de conversão rápida
 │       │   ├── FileRowView.swift    # Linha de exibição de itens na barra lateral
 │       │   └── StatusBarView.swift  # Rodapé com metadados do documento

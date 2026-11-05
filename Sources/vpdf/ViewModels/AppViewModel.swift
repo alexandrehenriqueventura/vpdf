@@ -85,6 +85,16 @@ public final class AppViewModel {
         documentText.count
     }
 
+    public var lineEnding: String {
+        if documentText.contains("\r\n") {
+            return "CRLF"
+        } else if documentText.contains("\r") {
+            return "CR"
+        } else {
+            return "LF"
+        }
+    }
+
     // MARK: - Ações de Diretório
 
     /// Restaura diretório autorizado da sessão anterior.
@@ -178,7 +188,11 @@ public final class AppViewModel {
 
         fileLoadTask = Task { @MainActor [weak self] in
             guard let self = self else { return }
-            defer { self.isLoading = false }
+            defer {
+                if !Task.isCancelled {
+                    self.isLoading = false
+                }
+            }
 
             do {
                 let data = try await self.fileSystemService.readFileData(at: targetURL)
@@ -388,8 +402,24 @@ public final class AppViewModel {
             let format: ConversionFormat = (ext == "doc") ? .doc : .docx
             let pdfData = try conversionService.convertWordToPDF(data: data, format: format)
 
-            // Salva o arquivo .pdf no mesmo diretório de origem
-            let targetURL = wordURL.deletingPathExtension().appendingPathExtension("pdf")
+            // Salva o arquivo .pdf evitando sobrescrita acidental se já existir arquivo homônimo
+            let defaultTargetURL = wordURL.deletingPathExtension().appendingPathExtension("pdf")
+            let targetURL: URL
+            if FileManager.default.fileExists(atPath: defaultTargetURL.path) {
+                let savePanel = NSSavePanel()
+                savePanel.title = "Salvar PDF Convertido"
+                savePanel.message = "O arquivo '\(defaultTargetURL.lastPathComponent)' já existe. Escolha onde salvar ou confirme o destino:"
+                savePanel.nameFieldStringValue = defaultTargetURL.lastPathComponent
+                savePanel.directoryURL = wordURL.deletingLastPathComponent()
+                savePanel.allowedContentTypes = [.pdf]
+                savePanel.prompt = "Salvar"
+
+                guard savePanel.runModal() == .OK, let chosenURL = savePanel.url else { return }
+                targetURL = chosenURL
+            } else {
+                targetURL = defaultTargetURL
+            }
+
             try pdfData.write(to: targetURL, options: .atomic)
 
             // Se estiver dentro da pasta aberta na barra lateral, atualiza a árvore

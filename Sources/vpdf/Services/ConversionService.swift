@@ -153,20 +153,28 @@ public final class ConversionService: Sendable {
         guard totalChars > 0 else { return NSAttributedString() }
 
         var lineBlocks: [LineBlock] = []
+        var lastBounds: CGRect?
+        var seenBoundsKeys = Set<String>()
 
         // 1. Identifica os blocos de texto geométricos via selectionForLine
+        // Otimização O(1): se o caractere atual pertence à mesma linha geométrica recém-encontrada,
+        // evita a chamada cara de selectionForLine (que é O(layout) no PDFKit).
         for i in 0..<totalChars {
             let b = page.characterBounds(at: i)
             guard b.width > 0 && b.height > 0 else { continue }
             let pt = CGPoint(x: b.midX, y: b.midY)
+
+            if let last = lastBounds, last.insetBy(dx: -1.0, dy: -1.0).contains(pt) {
+                continue
+            }
+
             if let sel = page.selectionForLine(at: pt), let s = sel.string, !s.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 let sb = sel.bounds(for: page)
-                let alreadyAdded = lineBlocks.contains { existing in
-                    abs(existing.bounds.origin.x - sb.origin.x) < 1.0 &&
-                    abs(existing.bounds.origin.y - sb.origin.y) < 1.0 &&
-                    abs(existing.bounds.width - sb.width) < 1.0
-                }
-                if !alreadyAdded {
+                lastBounds = sb
+
+                // Chave espacial discretizada para deduplicação O(1) em vez de varredura linear O(N)
+                let key = "\(Int(sb.origin.x.rounded()))_\(Int(sb.origin.y.rounded()))_\(Int(sb.width.rounded()))"
+                if seenBoundsKeys.insert(key).inserted {
                     lineBlocks.append(LineBlock(text: s, bounds: sb, attributedString: sel.attributedString))
                 }
             }
@@ -254,26 +262,35 @@ public final class ConversionService: Sendable {
     }
 
     /// Normaliza nomes de fontes internas do macOS para tipografia universal (Helvetica/Arial),
-    /// preservando rigorosamente o tamanho exato em pontos (pointSize), negrito, itálico e cores.
+    /// preservando rigorosamente o tamanho exato em pontos (pointSize), negrito, itálico e cores com cache de instâncias.
     private func normalizeFontsForExport(_ attr: NSAttributedString) -> NSAttributedString {
         let result = NSMutableAttributedString(attributedString: attr)
         let fullRange = NSRange(location: 0, length: result.length)
+        var fontCache: [String: NSFont] = [:]
 
         result.enumerateAttribute(.font, in: fullRange, options: []) { value, range, _ in
             guard let font = value as? NSFont else { return }
             let isBold = font.fontDescriptor.symbolicTraits.contains(.bold)
             let isItalic = font.fontDescriptor.symbolicTraits.contains(.italic)
             let size = max(6.0, font.pointSize)
+            let cacheKey = "\(isBold ? "b" : "_")_\(isItalic ? "i" : "_")_\(size)"
 
-            var normalizedFont: NSFont
-            if isBold && isItalic {
-                normalizedFont = NSFontManager.shared.font(withFamily: "Helvetica", traits: [.boldFontMask, .italicFontMask], weight: 7, size: size) ?? font
-            } else if isBold {
-                normalizedFont = NSFontManager.shared.font(withFamily: "Helvetica", traits: .boldFontMask, weight: 7, size: size) ?? font
-            } else if isItalic {
-                normalizedFont = NSFontManager.shared.font(withFamily: "Helvetica", traits: .italicFontMask, weight: 5, size: size) ?? font
+            let normalizedFont: NSFont
+            if let cached = fontCache[cacheKey] {
+                normalizedFont = cached
             } else {
-                normalizedFont = NSFont(name: "Helvetica", size: size) ?? font
+                let resolved: NSFont
+                if isBold && isItalic {
+                    resolved = NSFontManager.shared.font(withFamily: "Helvetica", traits: [.boldFontMask, .italicFontMask], weight: 7, size: size) ?? font
+                } else if isBold {
+                    resolved = NSFontManager.shared.font(withFamily: "Helvetica", traits: .boldFontMask, weight: 7, size: size) ?? font
+                } else if isItalic {
+                    resolved = NSFontManager.shared.font(withFamily: "Helvetica", traits: .italicFontMask, weight: 5, size: size) ?? font
+                } else {
+                    resolved = NSFont(name: "Helvetica", size: size) ?? font
+                }
+                fontCache[cacheKey] = resolved
+                normalizedFont = resolved
             }
 
             result.removeAttribute(.font, range: range)

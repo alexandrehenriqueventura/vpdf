@@ -3,6 +3,7 @@ import SwiftUI
 /// Barra de rodapé nativa macOS com informações de codificação, linhas, palavras e estado de salvamento.
 public struct StatusBarView: View {
     public let encodingName: String
+    public let lineEnding: String
     public let wordCount: Int
     public let charCount: Int
     public let lineCount: Int
@@ -10,12 +11,14 @@ public struct StatusBarView: View {
 
     public init(
         encodingName: String,
+        lineEnding: String = "LF",
         wordCount: Int,
         charCount: Int,
         lineCount: Int,
         isDirty: Bool
     ) {
         self.encodingName = encodingName
+        self.lineEnding = lineEnding
         self.wordCount = wordCount
         self.charCount = charCount
         self.lineCount = lineCount
@@ -32,7 +35,7 @@ public struct StatusBarView: View {
                     .background(Color.secondary.opacity(0.12))
                     .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
 
-                Text("LF")
+                Text(lineEnding)
                     .padding(.horizontal, 4)
                     .padding(.vertical, 2)
                     .background(Color.secondary.opacity(0.08))

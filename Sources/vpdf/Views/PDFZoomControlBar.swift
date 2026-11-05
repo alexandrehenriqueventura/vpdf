@@ -78,6 +78,7 @@ public struct PDFZoomControlBar: View {
                 ),
                 in: 0.25...3.0
             )
+            .accessibilityLabel("Nível de Zoom")
             .frame(width: 85)
             .controlSize(.mini)
 
