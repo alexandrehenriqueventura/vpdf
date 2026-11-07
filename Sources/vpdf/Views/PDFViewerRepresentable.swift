@@ -133,22 +133,26 @@ public struct PDFViewerRepresentable: NSViewRepresentable {
             }
         }
 
-        // Executa comandos de anotação
+        // Executa comandos de anotação de forma atômica e idempotente
         if let command = annotationCommand {
-            DispatchQueue.main.async {
-                self.annotationCommand = nil
-            }
-            switch command {
-            case .highlight(let option):
-                pdfView.addAnnotation(type: .highlight, color: option.nsColor)
-            case .underline:
-                pdfView.addAnnotation(type: .underline, color: .systemBlue)
-            case .strikeOut:
-                pdfView.addAnnotation(type: .strikeOut, color: .systemRed)
-            case .copy:
-                pdfView.copyCurrentSelection()
-            case .remove:
-                pdfView.removeAnnotationsFromSelection()
+            if context.coordinator.lastExecutedCommand != command {
+                context.coordinator.lastExecutedCommand = command
+                switch command {
+                case .highlight(let option):
+                    pdfView.addAnnotation(type: .highlight, color: option.nsColor)
+                case .underline:
+                    pdfView.addAnnotation(type: .underline, color: .systemBlue)
+                case .strikeOut:
+                    pdfView.addAnnotation(type: .strikeOut, color: .systemRed)
+                case .copy:
+                    pdfView.copyCurrentSelection()
+                case .remove:
+                    pdfView.removeAnnotationsFromSelection()
+                }
+                DispatchQueue.main.async {
+                    self.annotationCommand = nil
+                    context.coordinator.lastExecutedCommand = nil
+                }
             }
         }
 
@@ -191,6 +195,7 @@ public struct PDFViewerRepresentable: NSViewRepresentable {
         weak var pdfView: VPDFView?
         var lastSearchQuery: String = ""
         var allSearchSelections: [PDFSelection] = []
+        var lastExecutedCommand: AnnotationCommand? = nil
 
         init(_ parent: PDFViewerRepresentable) {
             self.parent = parent

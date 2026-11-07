@@ -63,10 +63,25 @@ public struct ContentView: View {
         } message: { error in
             Text(error.errorDescription ?? "Ocorreu um erro inesperado.")
         }
+        .alert("Alterações Não Salvas", isPresented: $viewModel.showUnsavedChangesAlert) {
+            Button("Salvar e Continuar") {
+                Task { await viewModel.confirmSaveAndLoadPending() }
+            }
+            Button("Descartar Alterações", role: .destructive) {
+                Task { await viewModel.confirmDiscardAndLoadPending() }
+            }
+            Button("Cancelar", role: .cancel) {
+                viewModel.cancelPendingSelection()
+            }
+        } message: {
+            Text("Você possui alterações não salvas no arquivo atual. Deseja salvar as alterações antes de abrir outro arquivo?")
+        }
         .onChange(of: viewModel.selectedItem) { _, newItem in
             if let item = newItem, !item.isDirectory {
-                Task {
-                    await viewModel.selectFile(item)
+                if item.url != viewModel.currentLoadedURL {
+                    Task {
+                        await viewModel.requestSelectFile(item)
+                    }
                 }
             }
         }
@@ -153,7 +168,7 @@ public struct ContentView: View {
                 .tag(item)
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    viewModel.selectedItem = item
+                    Task { await viewModel.requestSelectFile(item) }
                 }
         }
     }
@@ -288,7 +303,9 @@ public struct ContentView: View {
                 TextEditorRepresentable(
                     text: $viewModel.documentText,
                     isDirty: $viewModel.isDirty,
-                    searchText: viewModel.searchText
+                    searchText: viewModel.searchText,
+                    currentSearchIndex: $viewModel.currentSearchMatchIndex,
+                    totalSearchMatches: $viewModel.totalSearchMatches
                 )
                 .frame(maxWidth: 880)
                 .background(Color(NSColor.textBackgroundColor))
@@ -312,10 +329,10 @@ public struct ContentView: View {
             if viewModel.isSearchPresented {
                 PDFSearchBar(
                     searchQuery: $viewModel.searchText,
-                    currentMatch: 0,
-                    totalMatches: 0,
-                    onNext: { },
-                    onPrevious: { },
+                    currentMatch: viewModel.currentSearchMatchIndex,
+                    totalMatches: viewModel.totalSearchMatches,
+                    onNext: { viewModel.searchNext() },
+                    onPrevious: { viewModel.searchPrevious() },
                     onClose: { viewModel.closeSearch() }
                 )
                 .padding(.trailing, 16)

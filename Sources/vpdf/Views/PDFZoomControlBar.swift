@@ -94,7 +94,6 @@ public struct PDFZoomControlBar: View {
             .buttonStyle(.plain)
             .help("Aumentar Zoom (⌘+)")
             .keyboardShortcut("+", modifiers: .command)
-            .keyboardShortcut("=", modifiers: .command)
 
             // Separador vertical sutil
             Divider()

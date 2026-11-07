@@ -7,15 +7,21 @@ public struct TextEditorRepresentable: NSViewRepresentable {
     @Binding public var text: String
     @Binding public var isDirty: Bool
     public var searchText: String
+    @Binding public var currentSearchIndex: Int
+    @Binding public var totalSearchMatches: Int
 
     public init(
         text: Binding<String>,
         isDirty: Binding<Bool>,
-        searchText: String = ""
+        searchText: String = "",
+        currentSearchIndex: Binding<Int> = .constant(0),
+        totalSearchMatches: Binding<Int> = .constant(0)
     ) {
         self._text = text
         self._isDirty = isDirty
         self.searchText = searchText
+        self._currentSearchIndex = currentSearchIndex
+        self._totalSearchMatches = totalSearchMatches
     }
 
     public func makeCoordinator() -> Coordinator {
@@ -85,6 +91,8 @@ public struct TextEditorRepresentable: NSViewRepresentable {
         } else if searchText.isEmpty && !context.coordinator.lastSearchText.isEmpty {
             context.coordinator.lastSearchText = ""
             context.coordinator.clearSearchHighlights(in: textView)
+        } else if !searchText.isEmpty && context.coordinator.lastSearchIndex != currentSearchIndex {
+            context.coordinator.navigateToMatch(at: currentSearchIndex, in: textView)
         }
     }
 
@@ -92,6 +100,8 @@ public struct TextEditorRepresentable: NSViewRepresentable {
         var parent: TextEditorRepresentable
         weak var textView: NSTextView?
         var lastSearchText: String = ""
+        var searchMatches: [NSRange] = []
+        var lastSearchIndex: Int = 0
 
         init(_ parent: TextEditorRepresentable) {
             self.parent = parent
@@ -113,32 +123,70 @@ public struct TextEditorRepresentable: NSViewRepresentable {
             let fullRange = NSRange(location: 0, length: fullText.length)
 
             layoutManager.removeTemporaryAttribute(.backgroundColor, forCharacterRange: fullRange)
+            searchMatches.removeAll()
 
             var searchRange = fullRange
-            var firstFoundRange: NSRange?
 
             while searchRange.location < fullText.length {
                 searchRange.length = fullText.length - searchRange.location
                 let foundRange = fullText.range(of: query, options: .caseInsensitive, range: searchRange)
                 if foundRange.location == NSNotFound { break }
 
-                // Destaca com amarelo suave (padrão macOS)
+                searchMatches.append(foundRange)
+
+                // Destaca com amarelo suave padrão macOS
                 layoutManager.addTemporaryAttribute(
                     .backgroundColor,
-                    value: NSColor.systemYellow.withAlphaComponent(0.4),
+                    value: NSColor.systemYellow.withAlphaComponent(0.35),
                     forCharacterRange: foundRange
                 )
-
-                if firstFoundRange == nil {
-                    firstFoundRange = foundRange
-                }
 
                 searchRange.location = foundRange.location + foundRange.length
             }
 
-            if let first = firstFoundRange {
+            let count = searchMatches.count
+            lastSearchIndex = count > 0 ? 1 : 0
+
+            DispatchQueue.main.async {
+                self.parent.totalSearchMatches = count
+                self.parent.currentSearchIndex = count > 0 ? 1 : 0
+            }
+
+            if let first = searchMatches.first {
+                layoutManager.addTemporaryAttribute(
+                    .backgroundColor,
+                    value: NSColor.systemOrange.withAlphaComponent(0.6),
+                    forCharacterRange: first
+                )
                 textView.scrollRangeToVisible(first)
             }
+        }
+
+        func navigateToMatch(at index: Int, in textView: NSTextView) {
+            guard let layoutManager = textView.layoutManager,
+                  !searchMatches.isEmpty,
+                  index >= 1,
+                  index <= searchMatches.count else { return }
+
+            lastSearchIndex = index
+
+            // Re-aplica cor suave a todas as ocorrências
+            for range in searchMatches {
+                layoutManager.addTemporaryAttribute(
+                    .backgroundColor,
+                    value: NSColor.systemYellow.withAlphaComponent(0.35),
+                    forCharacterRange: range
+                )
+            }
+
+            // Destaca a ocorrência ativa com cor âmbar/laranja
+            let activeRange = searchMatches[index - 1]
+            layoutManager.addTemporaryAttribute(
+                .backgroundColor,
+                value: NSColor.systemOrange.withAlphaComponent(0.6),
+                forCharacterRange: activeRange
+            )
+            textView.scrollRangeToVisible(activeRange)
         }
 
         func clearSearchHighlights(in textView: NSTextView) {
@@ -146,6 +194,12 @@ public struct TextEditorRepresentable: NSViewRepresentable {
                   let textStorage = textView.textStorage else { return }
             let fullRange = NSRange(location: 0, length: textStorage.string.count)
             layoutManager.removeTemporaryAttribute(.backgroundColor, forCharacterRange: fullRange)
+            searchMatches.removeAll()
+            lastSearchIndex = 0
+            DispatchQueue.main.async {
+                self.parent.totalSearchMatches = 0
+                self.parent.currentSearchIndex = 0
+            }
         }
     }
 }

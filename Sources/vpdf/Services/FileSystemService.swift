@@ -24,7 +24,7 @@ public final class FileSystemService: @unchecked Sendable {
 
     /// Abre o diálogo nativo NSOpenPanel para o usuário selecionar uma pasta.
     @MainActor
-    public func selectFolder() async -> URL? {
+    public func selectFolder() async throws -> URL? {
         let panel = NSOpenPanel()
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
@@ -38,12 +38,8 @@ public final class FileSystemService: @unchecked Sendable {
             return nil
         }
 
-        do {
-            try persistBookmark(for: selectedURL)
-            return selectedURL
-        } catch {
-            return selectedURL
-        }
+        try persistBookmark(for: selectedURL)
+        return selectedURL
     }
 
     /// Salva o Security-Scoped Bookmark no UserDefaults para restaurar na próxima inicialização.
@@ -103,6 +99,16 @@ public final class FileSystemService: @unchecked Sendable {
         }
     }
 
+    /// Verifica se uma URL está contida no escopo de acesso ativo do sandbox.
+    public func isURLWithinSandboxScope(_ url: URL) -> Bool {
+        guard let activeURL = activeSecurityScopedURL else {
+            return true
+        }
+        let rootPath = activeURL.standardizedFileURL.resolvingSymlinksInPath().path
+        let targetPath = url.standardizedFileURL.resolvingSymlinksInPath().path
+        return targetPath == rootPath || targetPath.hasPrefix(rootPath + "/")
+    }
+
     // MARK: - Directory Inspection (Lazy Loading)
 
     /// Lista os filhos imediatos de um diretório de forma assíncrona (fora da main thread).
@@ -156,9 +162,13 @@ public final class FileSystemService: @unchecked Sendable {
 
     // MARK: - File I/O
 
-    /// Lê os bytes brutos do arquivo em segundo plano.
+    /// Lê os bytes brutos do arquivo em segundo plano respeitando o App Sandbox.
     public func readFileData(at url: URL) async throws -> Data {
-        try await Task.detached(priority: .userInitiated) {
+        guard isURLWithinSandboxScope(url) else {
+            throw AppError.permissionDenied(url)
+        }
+
+        return try await Task.detached(priority: .userInitiated) {
             let fileManager = FileManager.default
             guard fileManager.fileExists(atPath: url.path) else {
                 throw AppError.fileNotFound(url)
@@ -172,8 +182,12 @@ public final class FileSystemService: @unchecked Sendable {
         }.value
     }
 
-    /// Grava texto no arquivo preservando a codificação especificada.
+    /// Grava texto no arquivo preservando a codificação especificada e respeitando o App Sandbox.
     public func saveText(_ text: String, to url: URL, encoding: String.Encoding) async throws {
+        guard isURLWithinSandboxScope(url) else {
+            throw AppError.permissionDenied(url)
+        }
+
         try await Task.detached(priority: .userInitiated) {
             guard let data = text.data(using: encoding) else {
                 throw AppError.saveFailed("Incompatibilidade de codificação com o conteúdo informado.")

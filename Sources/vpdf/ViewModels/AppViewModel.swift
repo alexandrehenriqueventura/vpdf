@@ -51,6 +51,14 @@ public final class AppViewModel {
     public var activeError: AppError?
     public var showErrorAlert: Bool = false
 
+    // MARK: - Alerta de Alterações Não Salvas
+    public var showUnsavedChangesAlert: Bool = false
+    public var pendingItemToSelect: FileItem? = nil
+
+    // MARK: - Restauração de Zoom na Apresentação
+    private var prePresentationScaleFactor: CGFloat = 1.0
+    private var prePresentationAutoScales: Bool = true
+
     // MARK: - Serviços Injetados
     private let fileSystemService: FileSystemService
     private let encodingService: EncodingService
@@ -109,16 +117,22 @@ public final class AppViewModel {
 
     /// Abre diálogo nativo para seleção de pasta.
     public func openFolder() async {
-        guard let url = await fileSystemService.selectFolder() else {
-            return
+        do {
+            guard let url = try await fileSystemService.selectFolder() else {
+                return
+            }
+            self.rootURL = url
+            self.selectedItem = nil
+            self.currentLoadedURL = nil
+            self.pdfDocument = nil
+            self.documentText = ""
+            self.isDirty = false
+            await loadRootItems(for: url)
+        } catch let appError as AppError {
+            presentError(appError)
+        } catch {
+            presentError(.securityScopedBookmarkFailed(error.localizedDescription))
         }
-        self.rootURL = url
-        self.selectedItem = nil
-        self.currentLoadedURL = nil
-        self.pdfDocument = nil
-        self.documentText = ""
-        self.isDirty = false
-        await loadRootItems(for: url)
     }
 
     /// Carrega os itens do primeiro nível da pasta raiz.
@@ -165,6 +179,43 @@ public final class AppViewModel {
 
     // MARK: - Ações de Arquivo
 
+    /// Solicita seleção de arquivo, conferindo se há alterações não salvas antes de carregar.
+    public func requestSelectFile(_ item: FileItem) async {
+        guard !item.isDirectory else { return }
+        if isDirty, let current = currentLoadedURL, current != item.url {
+            pendingItemToSelect = item
+            showUnsavedChangesAlert = true
+            return
+        }
+        await selectFile(item)
+    }
+
+    /// Confirma o salvamento e prossegue com a abertura do arquivo pendente.
+    public func confirmSaveAndLoadPending() async {
+        showUnsavedChangesAlert = false
+        if let pending = pendingItemToSelect {
+            await saveCurrentFile()
+            await selectFile(pending)
+            pendingItemToSelect = nil
+        }
+    }
+
+    /// Descarta alterações não salvas e abre o arquivo pendente.
+    public func confirmDiscardAndLoadPending() async {
+        showUnsavedChangesAlert = false
+        isDirty = false
+        if let pending = pendingItemToSelect {
+            await selectFile(pending)
+            pendingItemToSelect = nil
+        }
+    }
+
+    /// Cancela a seleção do arquivo pendente e mantém o documento atual aberto.
+    public func cancelPendingSelection() {
+        showUnsavedChangesAlert = false
+        pendingItemToSelect = nil
+    }
+
     /// Seleciona e carrega o arquivo na área principal (suporta TXT, MD, RTF, HTML e PDF).
     public func selectFile(_ item: FileItem) async {
         guard !item.isDirectory else { return }
@@ -175,11 +226,6 @@ public final class AppViewModel {
 
         // Cancela qualquer tarefa de carregamento anterior ainda em execução
         fileLoadTask?.cancel()
-
-        // Se houver alterações pendentes no arquivo anterior, salva automaticamente
-        if isDirty, let current = currentLoadedURL, current != item.url {
-            await saveCurrentFile()
-        }
 
         let targetURL = item.url
         let ext = item.fileExtension
@@ -200,16 +246,8 @@ public final class AppViewModel {
 
                 // Extração e montagem para documentos PDF
                 if ext == "pdf" {
-                    guard let pdfDoc = PDFDocument(data: data) else {
+                    guard let pdfDoc = PDFDocument(data: data) ?? PDFDocument(url: targetURL) else {
                         throw AppError.conversionFailed("Documento PDF inválido ou protegido.")
-                    }
-
-                    var extractedText = ""
-                    for pageIndex in 0..<pdfDoc.pageCount {
-                        guard !Task.isCancelled else { return }
-                        if let page = pdfDoc.page(at: pageIndex), let pageString = page.string {
-                            extractedText += pageString + "\n"
-                        }
                     }
 
                     guard !Task.isCancelled else { return }
@@ -220,10 +258,26 @@ public final class AppViewModel {
                     self.pdfScaleFactor = 1.0
                     self.pdfCurrentPage = 1
                     self.pdfTotalPages = max(1, pdfDoc.pageCount)
-                    self.documentText = extractedText.trimmingCharacters(in: .newlines)
+                    self.documentText = ""
                     self.detectedEncoding = .utf8
                     self.detectedEncodingName = "PDF (\(pdfDoc.pageCount) pág\(pdfDoc.pageCount == 1 ? "" : "s"))"
                     self.isDirty = false
+
+                    // Extração de texto assíncrona em background para busca ou conversões sem travar a interface
+                    Task.detached(priority: .utility) {
+                        var extractedText = ""
+                        for pageIndex in 0..<min(pdfDoc.pageCount, 100) {
+                            if let page = pdfDoc.page(at: pageIndex), let pageString = page.string {
+                                extractedText += pageString + "\n"
+                            }
+                        }
+                        let trimmed = extractedText.trimmingCharacters(in: .newlines)
+                        await MainActor.run { [weak self] in
+                            if self?.currentLoadedURL == targetURL {
+                                self?.documentText = trimmed
+                            }
+                        }
+                    }
                     return
                 }
 
@@ -449,6 +503,8 @@ public final class AppViewModel {
     public func togglePresentationMode() {
         isPresentationMode.toggle()
         if isPresentationMode {
+            prePresentationScaleFactor = pdfScaleFactor
+            prePresentationAutoScales = pdfAutoScales
             columnVisibility = .detailOnly
             pdfAutoScales = true
             isSearchPresented = false
@@ -459,6 +515,8 @@ public final class AppViewModel {
             }
         } else {
             columnVisibility = .automatic
+            pdfAutoScales = prePresentationAutoScales
+            pdfScaleFactor = prePresentationScaleFactor
             if let window = NSApp.keyWindow, window.styleMask.contains(.fullScreen) {
                 window.toggleFullScreen(nil)
             }

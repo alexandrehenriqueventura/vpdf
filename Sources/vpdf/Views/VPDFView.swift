@@ -20,6 +20,15 @@ public final class VPDFView: PDFView {
         }
     }
 
+    private enum KeyCode {
+        static let rightArrow: UInt16 = 124
+        static let downArrow: UInt16 = 125
+        static let space: UInt16 = 49
+        static let leftArrow: UInt16 = 123
+        static let upArrow: UInt16 = 126
+        static let escape: UInt16 = 53
+    }
+
     public var onPresentationModeToggle: (() -> Void)?
     public var onAnnotationAdded: (() -> Void)?
     public var onSlideChanged: ((Int, Int) -> Void)?
@@ -27,15 +36,15 @@ public final class VPDFView: PDFView {
     public override func keyDown(with event: NSEvent) {
         if isPresentationMode {
             switch event.keyCode {
-            case 124, 125, 49: // Seta Direita, Seta Baixo, Barra de Espaço
+            case KeyCode.rightArrow, KeyCode.downArrow, KeyCode.space:
                 goToNextPage(nil)
                 notifySlideChanged()
                 return
-            case 123, 126: // Seta Esquerda, Seta Cima
+            case KeyCode.leftArrow, KeyCode.upArrow:
                 goToPreviousPage(nil)
                 notifySlideChanged()
                 return
-            case 53: // Escape
+            case KeyCode.escape:
                 onPresentationModeToggle?()
                 return
             default:

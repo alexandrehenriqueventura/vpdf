@@ -21,7 +21,7 @@ public final class EncodingService: Sendable {
 
     /// Detecta a codificação dos dados e retorna o texto decodificado.
     /// Ordem de tentativa: BOMs -> UTF-8 -> Windows-1252 / ISO-8859-1 -> UTF-16 fallback.
-    public func decode(data: Data) throws -> DetectedText {
+    public func decode(data: Data, url: URL? = nil) throws -> DetectedText {
         if data.isEmpty {
             return DetectedText(content: "", encoding: .utf8, encodingName: "UTF-8")
         }
@@ -88,23 +88,25 @@ public final class EncodingService: Sendable {
             return DetectedText(content: winString, encoding: .windowsCP1252, encodingName: "Windows-1252")
         }
 
-        // 7. Tentativa genérica do sistema
-        var usedEncoding: String.Encoding = .utf8
-        if let string = try? String(contentsOf: createTemporaryURL(with: data), usedEncoding: &usedEncoding) {
-            return DetectedText(
-                content: string,
-                encoding: usedEncoding,
-                encodingName: name(for: usedEncoding)
-            )
+        // 7. Tentativa genérica do sistema usando heurística in-memory do Foundation
+        var convertedString: NSString?
+        var usedLossy: ObjCBool = false
+        let suggested = NSString.stringEncoding(
+            for: data,
+            encodingOptions: nil,
+            convertedString: &convertedString,
+            usedLossyConversion: &usedLossy
+        )
+        if suggested != 0, let string = convertedString as String? {
+            let enc = String.Encoding(rawValue: suggested)
+            return DetectedText(content: string, encoding: enc, encodingName: name(for: enc))
         }
 
-        throw AppError.invalidEncoding(URL(fileURLWithPath: "arquivo"))
-    }
-
-    private func createTemporaryURL(with data: Data) throws -> URL {
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        try data.write(to: tempURL)
-        return tempURL
+        if let targetURL = url {
+            throw AppError.invalidEncoding(targetURL)
+        } else {
+            throw AppError.conversionFailed("Codificação de texto incompatível ou não reconhecida.")
+        }
     }
 
     private func name(for encoding: String.Encoding) -> String {
