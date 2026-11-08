@@ -45,12 +45,26 @@ Escolha a versão correspondente ao seu sistema:
 ## 📸 Capturas de Tela
 
 <p align="center">
-  <b>Visualizador de Documentos com Anotações, Busca Suspensa e Zoom Flutuante</b><br>
+  <b>Navegação Ágil com Árvore de Diretórios Hierárquica</b><br>
+  <i>Encontre e abra documentos instantaneamente através da árvore de diretórios inteligente com lazy loading e filtragem exclusiva de PDFs.</i><br><br>
+  <img src="docs/screenshots/barra-lateral-arvore-diretorios.png" alt="Barra Lateral com Árvore de Diretórios no vpdf" width="850">
+</p>
+
+<p align="center">
+  <b>Modo Leitura Sem Distrações com Ocultação da Barra Lateral</b><br>
+  <i>Use o botão no topo esquerdo da janela ou o atalho <code>⌃⌘S</code> para recolher a barra lateral e expandir a área de leitura.</i><br><br>
+  <img src="docs/screenshots/barra-lateral-oculta.png" alt="Área de leitura expandida com barra lateral oculta" width="850">
+</p>
+
+<p align="center">
+  <b>Visualizador com Anotações, Busca Suspensa e Zoom Flutuante</b><br>
+  <i>Ferramentas de realce em 4 cores, busca em tempo real com contador e barra de zoom glassmorphism com paginação exata.</i><br><br>
   <img src="docs/screenshots/visualizador-pdf.png" alt="Visualizador de PDF no vpdf com anotações, busca e controle de zoom" width="850">
 </p>
 
 <p align="center">
-  <b>Tela Inicial e Ações Rápidas (Abrir Pastas e Conversor Word para PDF)</b><br>
+  <b>Tela Inicial e Ações Rápidas</b><br>
+  <i>Abertura direta de pastas e conversor integrado de documentos Word (.docx) para PDF.</i><br><br>
   <img src="docs/screenshots/tela-inicial.png" alt="Tela Inicial do vpdf com opções de abertura e conversão" width="850">
 </p>
 
@@ -88,10 +102,10 @@ Escolha a versão correspondente ao seu sistema:
 - **Conversor Nativo de Documentos Word (.docx e .doc) para PDF**:
   - Conversão instantânea de arquivos Microsoft Word (`.docx` e `.doc`) diretamente para `.pdf` paginado em padrão A4 via `NSAttributedString` e `CoreText`, sem depender de LibreOffice ou bibliotecas externas.
   - Acessível diretamente pelo botão na barra de ferramentas ou na tela inicial do app.
-- **Barra Lateral com Árvore de Diretórios (NavigationSplitView)**:
-  - Listagem inteligente filtrada **exclusivamente para arquivos PDF e pastas**, eliminando ruídos visuais de mídias ou arquivos não suportados.
-  - Carregamento preguiçoso (*lazy loading* assíncrono) que carrega o conteúdo de subpastas apenas quando o usuário as expande.
-  - Suporte ao atalho nativo do macOS para recolher/expandir a barra lateral (`⌃⌘S`).
+- **Barra Lateral com Árvore de Diretórios e Ocultação com Um Clique (NavigationSplitView)**:
+  - **Localização Instantânea de Documentos:** Listagem hierárquica inteligente filtrada **exclusivamente para arquivos PDF e pastas**, eliminando ruídos visuais de arquivos não suportados e permitindo encontrar e abrir documentos com máxima agilidade em pastas de faculdade, cursos ou relatórios.
+  - **Carregamento Preguiçoso (*Lazy Loading* Assíncrono):** Acesso ultrarrápido a diretórios com centenas de arquivos, carregando subpastas apenas no momento em que são expandidas.
+  - **Botão de Ocultação e Atalho (`⌃⌘S`):** Oculte ou exiba a barra lateral instantaneamente pelo botão nativo na barra de título (canto superior esquerdo) ou pelo atalho de teclado **`⌃⌘S`**, maximizando a área de leitura para foco total sem distrações.
 - **Conversão de Documentos (ConversionService)**:
   - Converte documentos entre múltiplos formatos:
     - **Word (.docx)**: Documento do Microsoft Word gerado nativamente via `officeOpenXML`.
