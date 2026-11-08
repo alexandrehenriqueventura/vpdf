@@ -45,27 +45,27 @@ Escolha a versão correspondente ao seu sistema:
 ## 📸 Capturas de Tela
 
 <p align="center">
-  <b>Navegação Ágil com Árvore de Diretórios Hierárquica</b><br>
-  <i>Encontre e abra documentos instantaneamente através da árvore de diretórios inteligente com lazy loading e filtragem exclusiva de PDFs.</i><br><br>
+  <b>1. Tela Inicial e Ações Rápidas</b><br>
+  <i>Ponto de partida do aplicativo: interface limpa com opções diretas para abrir pastas no disco, converter documentos Word (.docx) para PDF e atalhos de navegação.</i><br><br>
+  <img src="docs/screenshots/tela-inicial.png" alt="Tela Inicial do vpdf com opções de abertura e conversão" width="850">
+</p>
+
+<p align="center">
+  <b>2. Navegação Ágil com Árvore de Diretórios Hierárquica</b><br>
+  <i>Localização instantânea de documentos através da barra lateral inteligente com filtragem automática de PDFs e carregamento preguiçoso (lazy loading).</i><br><br>
   <img src="docs/screenshots/barra-lateral-arvore-diretorios.png" alt="Barra Lateral com Árvore de Diretórios no vpdf" width="850">
 </p>
 
 <p align="center">
-  <b>Modo Leitura Sem Distrações com Ocultação da Barra Lateral</b><br>
-  <i>Use o botão no topo esquerdo da janela ou o atalho <code>⌃⌘S</code> para recolher a barra lateral e expandir a área de leitura.</i><br><br>
-  <img src="docs/screenshots/barra-lateral-oculta.png" alt="Área de leitura expandida com barra lateral oculta" width="850">
-</p>
-
-<p align="center">
-  <b>Visualizador com Anotações, Busca Suspensa e Zoom Flutuante</b><br>
-  <i>Ferramentas de realce em 4 cores, busca em tempo real com contador e barra de zoom glassmorphism com paginação exata.</i><br><br>
+  <b>3. Visualização com Anotações, Busca Suspensa e Zoom Flutuante</b><br>
+  <i>Ferramentas de seleção e marca-texto (realces em 4 cores, sublinhado, cópia), busca suspensa integrada (⌘F) com contador de ocorrências e controle de zoom glassmorphism com paginação precisa.</i><br><br>
   <img src="docs/screenshots/visualizador-pdf.png" alt="Visualizador de PDF no vpdf com anotações, busca e controle de zoom" width="850">
 </p>
 
 <p align="center">
-  <b>Tela Inicial e Ações Rápidas</b><br>
-  <i>Abertura direta de pastas e conversor integrado de documentos Word (.docx) para PDF.</i><br><br>
-  <img src="docs/screenshots/tela-inicial.png" alt="Tela Inicial do vpdf com opções de abertura e conversão" width="850">
+  <b>4. Modo Leitura Sem Distrações (Barra Lateral Ocultada)</b><br>
+  <i>Foco total no conteúdo: clique no botão nativo no topo esquerdo da janela ou use o atalho <code>⌃⌘S</code> para recolher a barra lateral e expandir a área de leitura.</i><br><br>
+  <img src="docs/screenshots/barra-lateral-oculta.png" alt="Área de leitura expandida com barra lateral oculta" width="850">
 </p>
 
 ---
