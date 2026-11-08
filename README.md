@@ -42,6 +42,20 @@ Escolha a versão correspondente ao seu sistema:
 
 ---
 
+## 📸 Capturas de Tela
+
+<p align="center">
+  <b>Visualizador de Documentos com Anotações, Busca Suspensa e Zoom Flutuante</b><br>
+  <img src="docs/screenshots/visualizador-pdf.png" alt="Visualizador de PDF no vpdf com anotações, busca e controle de zoom" width="850">
+</p>
+
+<p align="center">
+  <b>Tela Inicial e Ações Rápidas (Abrir Pastas e Conversor Word para PDF)</b><br>
+  <img src="docs/screenshots/tela-inicial.png" alt="Tela Inicial do vpdf com opções de abertura e conversão" width="850">
+</p>
+
+---
+
 ## ✨ Principais Funcionalidades
 
 - **Modo Apresentação em Tela Cheia (Slides e Apresentações)**:
