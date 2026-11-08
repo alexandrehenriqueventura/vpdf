@@ -63,18 +63,18 @@ public struct ContentView: View {
         } message: { error in
             Text(error.errorDescription ?? "Ocorreu um erro inesperado.")
         }
-        .alert("Alterações Não Salvas", isPresented: $viewModel.showUnsavedChangesAlert) {
-            Button("Salvar e Continuar") {
-                Task { await viewModel.confirmSaveAndLoadPending() }
+        .alert("Fechar Aba com Alterações Não Salvas", isPresented: $viewModel.showCloseTabUnsavedAlert) {
+            Button("Salvar e Fechar") {
+                Task { await viewModel.confirmSaveAndCloseTab() }
             }
             Button("Descartar Alterações", role: .destructive) {
-                Task { await viewModel.confirmDiscardAndLoadPending() }
+                viewModel.confirmDiscardAndCloseTab()
             }
             Button("Cancelar", role: .cancel) {
-                viewModel.cancelPendingSelection()
+                viewModel.cancelCloseTab()
             }
         } message: {
-            Text("Você possui alterações não salvas no arquivo atual. Deseja salvar as alterações antes de abrir outro arquivo?")
+            Text(closeTabAlertMessage)
         }
         .onChange(of: viewModel.selectedItem) { _, newItem in
             if let item = newItem, !item.isDirectory {
@@ -87,6 +87,13 @@ public struct ContentView: View {
         }
         .navigationTitle(viewModel.selectedItem?.name ?? (viewModel.rootURL?.lastPathComponent ?? "vpdf"))
         .navigationSubtitle(viewModel.selectedItem != nil ? (viewModel.isDirty ? "Modificado" : "Salvo") : "")
+    }
+
+    private var closeTabAlertMessage: String {
+        if let tab = viewModel.pendingTabToClose {
+            return "O arquivo '\(tab.title)' possui alterações não salvas. Deseja salvar antes de fechar a aba?"
+        }
+        return "Você possui alterações não salvas neste arquivo. Deseja salvar antes de fechar?"
     }
 
     // MARK: - Barra Lateral
@@ -177,8 +184,22 @@ public struct ContentView: View {
 
     @ViewBuilder
     private var detailContent: some View {
-        if viewModel.selectedItem != nil {
+        if !viewModel.openTabs.isEmpty {
             VStack(spacing: 0) {
+                // Barra de Abas de Documentos
+                if !viewModel.isPresentationMode {
+                    DocumentTabBar(
+                        tabs: viewModel.openTabs,
+                        activeTabID: viewModel.activeTabID,
+                        onSelectTab: { tab in
+                            viewModel.selectTab(tab)
+                        },
+                        onCloseTab: { tab in
+                            Task { await viewModel.requestCloseTab(tab) }
+                        }
+                    )
+                }
+
                 if let pdfDoc = viewModel.pdfDocument {
                     pdfDetailView(pdfDoc)
                 } else {
@@ -223,7 +244,7 @@ public struct ContentView: View {
                 currentPage: $viewModel.pdfCurrentPage,
                 totalPages: $viewModel.pdfTotalPages,
                 annotationCommand: $viewModel.activeAnnotationCommand,
-                onDocumentEdited: { viewModel.isDirty = true },
+                onDocumentEdited: { viewModel.markCurrentDocumentEdited() },
                 onTogglePresentation: { viewModel.togglePresentationMode() }
             )
             .id(viewModel.currentLoadedURL)
@@ -260,11 +281,13 @@ public struct ContentView: View {
                 VStack {
                     PDFAnnotationToolbar(
                         selectedColor: $viewModel.selectedHighlightColor,
+                        isDirty: viewModel.isDirty,
                         onHighlight: { opt in viewModel.applyAnnotation(.highlight(opt)) },
                         onUnderline: { viewModel.applyAnnotation(.underline) },
                         onStrikeOut: { viewModel.applyAnnotation(.strikeOut) },
                         onCopy: { viewModel.applyAnnotation(.copy) },
                         onRemoveAnnotation: { viewModel.applyAnnotation(.remove) },
+                        onSave: { Task { await viewModel.saveCurrentFile() } },
                         onClose: { viewModel.isAnnotationToolbarPresented = false }
                     )
                     .padding(.top, 12)
@@ -302,7 +325,10 @@ public struct ContentView: View {
 
                 TextEditorRepresentable(
                     text: $viewModel.documentText,
-                    isDirty: $viewModel.isDirty,
+                    isDirty: Binding(
+                        get: { viewModel.isDirty },
+                        set: { if $0 { viewModel.markCurrentDocumentEdited() } else { viewModel.isDirty = false } }
+                    ),
                     searchText: viewModel.searchText,
                     currentSearchIndex: $viewModel.currentSearchMatchIndex,
                     totalSearchMatches: $viewModel.totalSearchMatches
@@ -406,6 +432,19 @@ public struct ContentView: View {
             .keyboardShortcut("s", modifiers: .command)
             .disabled(viewModel.selectedItem == nil || !viewModel.isDirty)
             .help("Salvar alterações (⌘S)")
+
+            // Fechar Aba Ativa
+            Button {
+                if let activeID = viewModel.activeTabID,
+                   let tab = viewModel.openTabs.first(where: { $0.id == activeID }) {
+                    Task { await viewModel.requestCloseTab(tab) }
+                }
+            } label: {
+                Label("Fechar Aba", systemImage: "xmark")
+            }
+            .keyboardShortcut("w", modifiers: .command)
+            .disabled(viewModel.openTabs.isEmpty)
+            .help("Fechar aba ativa (⌘W)")
 
             // Menu de Conversão e Exportação
             Menu {

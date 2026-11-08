@@ -32,28 +32,34 @@ public enum HighlightColorOption: String, CaseIterable, Identifiable {
 /// Barra de ferramentas de seleção e anotação de texto (marcadores de cor, sublinhado, tachado e cópia rápida).
 public struct PDFAnnotationToolbar: View {
     @Binding public var selectedColor: HighlightColorOption
+    public var isDirty: Bool
     public let onHighlight: (HighlightColorOption) -> Void
     public let onUnderline: () -> Void
     public let onStrikeOut: () -> Void
     public let onCopy: () -> Void
     public let onRemoveAnnotation: () -> Void
+    public var onSave: (() -> Void)?
     public let onClose: () -> Void
 
     public init(
         selectedColor: Binding<HighlightColorOption>,
+        isDirty: Bool = false,
         onHighlight: @escaping (HighlightColorOption) -> Void,
         onUnderline: @escaping () -> Void,
         onStrikeOut: @escaping () -> Void,
         onCopy: @escaping () -> Void,
         onRemoveAnnotation: @escaping () -> Void,
+        onSave: (() -> Void)? = nil,
         onClose: @escaping () -> Void
     ) {
         self._selectedColor = selectedColor
+        self.isDirty = isDirty
         self.onHighlight = onHighlight
         self.onUnderline = onUnderline
         self.onStrikeOut = onStrikeOut
         self.onCopy = onCopy
         self.onRemoveAnnotation = onRemoveAnnotation
+        self.onSave = onSave
         self.onClose = onClose
     }
 
@@ -146,6 +152,25 @@ public struct PDFAnnotationToolbar: View {
             .buttonStyle(.plain)
             .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 6))
             .help("Copiar texto selecionado (⌘C)")
+
+            // Botão Salvar Alterações
+            Button {
+                onSave?()
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "square.and.arrow.down")
+                        .font(.system(size: 11, weight: .semibold))
+                    Text("Salvar")
+                        .font(.system(size: 12, weight: .semibold))
+                }
+                .foregroundStyle(isDirty ? Color.white : Color.secondary)
+                .padding(.horizontal, 9)
+                .frame(height: 26)
+            }
+            .buttonStyle(.plain)
+            .background(isDirty ? Color.accentColor : Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 6))
+            .disabled(!isDirty)
+            .help(isDirty ? "Salvar anotações no arquivo (⌘S)" : "Todas as anotações estão salvas")
 
             Divider()
                 .frame(height: 18)
