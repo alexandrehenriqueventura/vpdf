@@ -322,6 +322,12 @@ public final class AppViewModel {
         await selectFile(item)
     }
 
+    /// Abre o arquivo diretamente em uma nova aba (ou foca na aba caso já esteja aberto).
+    public func openInNewTab(_ item: FileItem) async {
+        guard !item.isDirectory else { return }
+        await selectFile(item)
+    }
+
     /// Confirma o salvamento e prossegue com a abertura do arquivo pendente.
     public func confirmSaveAndLoadPending() async {
         showUnsavedChangesAlert = false

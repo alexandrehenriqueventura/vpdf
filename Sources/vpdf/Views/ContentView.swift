@@ -169,6 +169,19 @@ public struct ContentView: View {
                 .onTapGesture {
                     Task { await viewModel.loadChildren(for: item) }
                 }
+                .contextMenu {
+                    Button {
+                        Task { await viewModel.loadChildren(for: item) }
+                    } label: {
+                        Label("Recarregar Pasta", systemImage: "arrow.clockwise")
+                    }
+
+                    Button {
+                        NSWorkspace.shared.activateFileViewerSelecting([item.url])
+                    } label: {
+                        Label("Revelar no Finder", systemImage: "folder")
+                    }
+                }
             }
         } else {
             FileRowView(item: item)
@@ -176,6 +189,21 @@ public struct ContentView: View {
                 .contentShape(Rectangle())
                 .onTapGesture {
                     Task { await viewModel.requestSelectFile(item) }
+                }
+                .contextMenu {
+                    Button {
+                        Task { await viewModel.openInNewTab(item) }
+                    } label: {
+                        Label("Abrir em Nova Aba", systemImage: "plus.rectangle.on.rectangle")
+                    }
+
+                    Divider()
+
+                    Button {
+                        NSWorkspace.shared.activateFileViewerSelecting([item.url])
+                    } label: {
+                        Label("Revelar no Finder", systemImage: "folder")
+                    }
                 }
         }
     }
