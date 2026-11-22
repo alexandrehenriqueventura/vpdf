@@ -84,8 +84,7 @@ public final class AppViewModel {
         self.encodingService = encodingService
         self.conversionService = conversionService
 
-        // Restaura permissão segura da sessão anterior, se existente
-        restorePreviousSession()
+        // Inicia sempre na tela inicial limpa (EmptyStateView) sem abrir pastas ou arquivos da sessão anterior
     }
 
     // MARK: - Métricas do Documento
