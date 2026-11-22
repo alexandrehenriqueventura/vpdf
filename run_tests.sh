@@ -8,11 +8,13 @@ mkdir -p "$CACHE_DIR"
 
 swiftc -module-cache-path "$CACHE_DIR" \
     Sources/vpdf/Models/ConversionFormat.swift \
+    Sources/vpdf/Models/CompressionLevel.swift \
     Sources/vpdf/Models/AppError.swift \
     Sources/vpdf/Models/FileItem.swift \
     Sources/vpdf/Services/EncodingService.swift \
     Sources/vpdf/Services/FileSystemService.swift \
     Sources/vpdf/Services/ConversionService.swift \
+    Sources/vpdf/Services/PDFCompressionService.swift \
     Tests/TestRunner.swift \
     -o "${TMPDIR:-/tmp}/vpdf_tests"
 

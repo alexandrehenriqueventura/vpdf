@@ -47,6 +47,16 @@ public final class AppViewModel {
     public var activeNoteText: String = ""
     public var activeNoteColor: HighlightColorOption = .yellow
 
+    // MARK: - Versão 1.1: Painel de Miniaturas e Edição Estrutural
+    public var isThumbnailsSidebarVisible: Bool = false
+    public var documentRevisionID: UUID = UUID()
+    public var showCompressionSheet: Bool = false
+    public var isCompressing: Bool = false
+    public var compressionResult: (data: Data, originalSize: Int64, compressedSize: Int64)? = nil
+    public var selectedCompressionLevel: CompressionLevel = .balanced
+    public var pageActionAlertMessage: String? = nil
+    public var showPageActionAlert: Bool = false
+
     // MARK: - Formato de Conversão Selecionado
     public var selectedConversionFormat: ConversionFormat = .pdf
 
@@ -862,5 +872,120 @@ public final class AppViewModel {
             markCurrentDocumentEdited()
         }
         self.activeNoteEditState = nil
+    }
+
+    // MARK: - Versão 1.1: Operações de Páginas (Rotação, Exclusão e Navegação)
+
+    public func toggleThumbnailsSidebar() {
+        isThumbnailsSidebarVisible.toggle()
+    }
+
+    public func goToPage(_ pageNumber: Int) {
+        pdfCurrentPage = max(1, min(pdfTotalPages, pageNumber))
+    }
+
+    /// Gira uma página específica em 90 graus (horário ou anti-horário).
+    public func rotatePage(at index: Int, clockwise: Bool) {
+        guard let doc = pdfDocument, index >= 0, index < doc.pageCount, let page = doc.page(at: index) else { return }
+        let delta = clockwise ? 90 : -90
+        var newRotation = (page.rotation + delta) % 360
+        if newRotation < 0 { newRotation += 360 }
+        page.rotation = newRotation
+
+        documentRevisionID = UUID()
+        markCurrentDocumentEdited()
+    }
+
+    /// Gira todas as páginas do documento em 90 graus.
+    public func rotateAllPages(clockwise: Bool) {
+        guard let doc = pdfDocument, doc.pageCount > 0 else { return }
+        let delta = clockwise ? 90 : -90
+        for i in 0..<doc.pageCount {
+            guard let page = doc.page(at: i) else { continue }
+            var newRotation = (page.rotation + delta) % 360
+            if newRotation < 0 { newRotation += 360 }
+            page.rotation = newRotation
+        }
+
+        documentRevisionID = UUID()
+        markCurrentDocumentEdited()
+    }
+
+    /// Exclui uma página do documento PDF (impede exclusão se restar apenas 1 página).
+    public func deletePage(at index: Int) {
+        guard let doc = pdfDocument, index >= 0, index < doc.pageCount else { return }
+
+        guard doc.pageCount > 1 else {
+            pageActionAlertMessage = "O documento precisa conter pelo menos 1 página. Não é possível excluir a última página."
+            showPageActionAlert = true
+            return
+        }
+
+        doc.removePage(at: index)
+        pdfTotalPages = doc.pageCount
+        if pdfCurrentPage > doc.pageCount {
+            pdfCurrentPage = doc.pageCount
+        }
+
+        documentRevisionID = UUID()
+        markCurrentDocumentEdited()
+    }
+
+    // MARK: - Versão 1.1: Compressão de PDF
+
+    public func prepareCompressionSheet() {
+        guard pdfDocument != nil else { return }
+        self.compressionResult = nil
+        self.showCompressionSheet = true
+        Task {
+            await executeCompression(level: selectedCompressionLevel)
+        }
+    }
+
+    public func executeCompression(level: CompressionLevel) async {
+        guard let doc = pdfDocument else { return }
+        self.selectedCompressionLevel = level
+        self.isCompressing = true
+        defer { self.isCompressing = false }
+
+        do {
+            let result = try await Task.detached(priority: .userInitiated) {
+                try PDFCompressionService.shared.compressPDF(document: doc, level: level)
+            }.value
+            self.compressionResult = result
+        } catch let appError as AppError {
+            presentError(appError)
+        } catch {
+            presentError(.conversionFailed("Falha na compressão do PDF: \(error.localizedDescription)"))
+        }
+    }
+
+    public func applyCompressedDataToCurrentDocument() {
+        guard let result = compressionResult, selectedItem != nil else { return }
+        guard let newDoc = PDFDocument(data: result.data) else { return }
+
+        self.pdfDocument = newDoc
+        self.pdfTotalPages = newDoc.pageCount
+        self.pdfCurrentPage = 1
+        self.documentRevisionID = UUID()
+        self.isDirty = true
+
+        Task {
+            await saveCurrentFile()
+        }
+
+        self.showCompressionSheet = false
+        self.compressionResult = nil
+    }
+
+    public func exportCompressedCopy(to destinationURL: URL) {
+        guard let result = compressionResult else { return }
+        do {
+            try result.data.write(to: destinationURL, options: .atomic)
+            self.showCompressionSheet = false
+            self.compressionResult = nil
+        } catch {
+            presentError(.saveFailed("Não foi possível exportar a cópia comprimida: \(error.localizedDescription)"))
+        }
     }
 }

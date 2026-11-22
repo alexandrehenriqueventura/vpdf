@@ -97,6 +97,32 @@ public struct ContentView: View {
                 }
             )
         }
+        .sheet(isPresented: $viewModel.showCompressionSheet) {
+            PDFCompressionSheet(
+                fileName: viewModel.selectedItem?.name ?? "documento.pdf",
+                isCompressing: viewModel.isCompressing,
+                compressionResult: viewModel.compressionResult,
+                selectedLevel: $viewModel.selectedCompressionLevel,
+                onLevelChange: { newLevel in
+                    Task { await viewModel.executeCompression(level: newLevel) }
+                },
+                onApplyToCurrent: {
+                    viewModel.applyCompressedDataToCurrentDocument()
+                },
+                onExportCopy: { destinationURL in
+                    viewModel.exportCompressedCopy(to: destinationURL)
+                },
+                onCancel: {
+                    viewModel.showCompressionSheet = false
+                    viewModel.compressionResult = nil
+                }
+            )
+        }
+        .alert("Atenção", isPresented: $viewModel.showPageActionAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(viewModel.pageActionAlertMessage ?? "")
+        }
         .onChange(of: viewModel.selectedItem) { _, newItem in
             if let item = newItem, !item.isDirectory {
                 if item.url != viewModel.currentLoadedURL {
@@ -280,27 +306,59 @@ public struct ContentView: View {
 
     @ViewBuilder
     private func pdfDetailView(_ pdfDoc: PDFDocument) -> some View {
-        ZStack(alignment: .bottom) {
-            PDFViewerRepresentable(
-                document: pdfDoc,
-                isPresentationMode: viewModel.isPresentationMode,
-                isSearchPresented: viewModel.isSearchPresented,
-                searchQuery: viewModel.searchText,
-                currentSearchIndex: $viewModel.currentSearchMatchIndex,
-                totalSearchMatches: $viewModel.totalSearchMatches,
-                scaleFactor: $viewModel.pdfScaleFactor,
-                autoScales: $viewModel.pdfAutoScales,
-                currentPage: $viewModel.pdfCurrentPage,
-                totalPages: $viewModel.pdfTotalPages,
-                annotationCommand: $viewModel.activeAnnotationCommand,
-                onDocumentEdited: { viewModel.markCurrentDocumentEdited() },
-                onTogglePresentation: { viewModel.togglePresentationMode() },
-                onRequestAddNoteForSelection: { sel in viewModel.requestAddNoteForSelection(sel) },
-                onRequestAddStickyNoteAtPoint: { page, pt in viewModel.requestAddStickyNote(on: page, at: pt) },
-                onRequestEditNote: { anno, page in viewModel.requestEditNote(annotation: anno, on: page) }
-            )
-            .id(viewModel.currentLoadedURL)
-            .background(viewModel.isPresentationMode ? Color.black : Color(NSColor.windowBackgroundColor))
+        HStack(spacing: 0) {
+            // Painel Lateral Retrátil de Miniaturas (Versão 1.1)
+            if viewModel.isThumbnailsSidebarVisible && !viewModel.isPresentationMode {
+                PDFThumbnailsSidebar(
+                    document: pdfDoc,
+                    revisionID: viewModel.documentRevisionID,
+                    currentPage: $viewModel.pdfCurrentPage,
+                    totalPages: viewModel.pdfTotalPages,
+                    onSelectPage: { pageNumber in
+                        viewModel.goToPage(pageNumber)
+                    },
+                    onRotatePage: { index, clockwise in
+                        viewModel.rotatePage(at: index, clockwise: clockwise)
+                    },
+                    onRotateAllPages: { clockwise in
+                        viewModel.rotateAllPages(clockwise: clockwise)
+                    },
+                    onDeletePage: { index in
+                        viewModel.deletePage(at: index)
+                    },
+                    onShowCompression: {
+                        viewModel.prepareCompressionSheet()
+                    },
+                    onClose: {
+                        viewModel.isThumbnailsSidebarVisible = false
+                    }
+                )
+                .transition(.move(edge: .leading).combined(with: .opacity))
+
+                Divider()
+            }
+
+            ZStack(alignment: .bottom) {
+                PDFViewerRepresentable(
+                    document: pdfDoc,
+                    isPresentationMode: viewModel.isPresentationMode,
+                    isSearchPresented: viewModel.isSearchPresented,
+                    searchQuery: viewModel.searchText,
+                    currentSearchIndex: $viewModel.currentSearchMatchIndex,
+                    totalSearchMatches: $viewModel.totalSearchMatches,
+                    scaleFactor: $viewModel.pdfScaleFactor,
+                    autoScales: $viewModel.pdfAutoScales,
+                    currentPage: $viewModel.pdfCurrentPage,
+                    totalPages: $viewModel.pdfTotalPages,
+                    annotationCommand: $viewModel.activeAnnotationCommand,
+                    onDocumentEdited: { viewModel.markCurrentDocumentEdited() },
+                    onTogglePresentation: { viewModel.togglePresentationMode() },
+                    onRequestAddNoteForSelection: { sel in viewModel.requestAddNoteForSelection(sel) },
+                    onRequestAddStickyNoteAtPoint: { page, pt in viewModel.requestAddStickyNote(on: page, at: pt) },
+                    onRequestEditNote: { anno, page in viewModel.requestEditNote(annotation: anno, on: page) }
+                )
+                .id("\(viewModel.currentLoadedURL?.absoluteString ?? "")-\(viewModel.documentRevisionID)")
+                .background(viewModel.isPresentationMode ? Color.black : Color(NSColor.windowBackgroundColor))
 
             // Se em Modo Apresentação, exibe HUD de slides
             if viewModel.isPresentationMode {
@@ -369,6 +427,7 @@ public struct ContentView: View {
             }
         }
     }
+}
 
     @ViewBuilder
     private var textEditorDetailView: some View {
@@ -437,6 +496,25 @@ public struct ContentView: View {
             .keyboardShortcut("f", modifiers: [.command, .shift])
             .disabled(viewModel.pdfDocument == nil)
             .help("Modo Apresentação em Tela Cheia para Slides (⇧⌘F)")
+
+            // Painel de Miniaturas e Edição de Páginas (Versão 1.1)
+            Button {
+                viewModel.toggleThumbnailsSidebar()
+            } label: {
+                Label("Páginas e Miniaturas", systemImage: "sidebar.squares.left")
+            }
+            .keyboardShortcut("p", modifiers: [.command, .option])
+            .disabled(viewModel.pdfDocument == nil)
+            .help("Alternar painel lateral de miniaturas e edição de páginas (⌥⌘P)")
+
+            // Comprimir PDF (Versão 1.1)
+            Button {
+                viewModel.prepareCompressionSheet()
+            } label: {
+                Label("Comprimir PDF", systemImage: "arrow.down.right.and.arrow.up.left.to.center")
+            }
+            .disabled(viewModel.pdfDocument == nil)
+            .help("Comprimir e reduzir o tamanho do arquivo PDF")
 
             // Ferramentas de Seleção e Marca-Texto
             Button {

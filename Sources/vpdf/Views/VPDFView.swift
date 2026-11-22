@@ -58,6 +58,10 @@ public final class VPDFView: PDFView {
         }
     }
 
+    public func refreshLayout() {
+        layoutDocumentView()
+    }
+
     public override func keyDown(with event: NSEvent) {
         if isPresentationMode {
             switch event.keyCode {

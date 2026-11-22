@@ -139,6 +139,16 @@ public struct PDFViewerRepresentable: NSViewRepresentable {
             }
         }
 
+        // Sincroniza navegação para a página solicitada (ex.: clique em miniatura)
+        if let doc = document, currentPage > 0, currentPage <= doc.pageCount {
+            if context.coordinator.lastNavigatedPage != currentPage {
+                context.coordinator.lastNavigatedPage = currentPage
+                if let targetPage = doc.page(at: currentPage - 1) {
+                    pdfView.go(to: targetPage)
+                }
+            }
+        }
+
         // Sincroniza estado de Zoom
         if !isPresentationMode {
             if autoScales {
@@ -220,6 +230,7 @@ public struct PDFViewerRepresentable: NSViewRepresentable {
         var lastSearchQuery: String = ""
         var allSearchSelections: [PDFSelection] = []
         var lastExecutedCommand: AnnotationCommand? = nil
+        var lastNavigatedPage: Int = 0
 
         init(_ parent: PDFViewerRepresentable) {
             self.parent = parent
@@ -252,6 +263,7 @@ public struct PDFViewerRepresentable: NSViewRepresentable {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 let newPage = pageIndex + 1
+                self.lastNavigatedPage = newPage
                 if self.parent.currentPage != newPage {
                     self.parent.currentPage = newPage
                 }

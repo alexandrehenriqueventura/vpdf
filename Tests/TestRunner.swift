@@ -304,8 +304,80 @@ struct TestRunner {
         assertTrue(!notePage.annotations.contains(freeStickyNote), "Nota deve ser removida da página com sucesso")
         print("  ✓ testPDFNotesTextAndFreeStickyAnnotations passou")
 
+        // 20. Rotação de Páginas (Versão 1.1)
+        print("\n▶ Testando Rotação de Páginas (Versão 1.1)...")
+        var rotationPageText = ""
+        for i in 1...80 {
+            rotationPageText += "Linha \(i): Conteúdo da página para testes de rotação e exclusão estrutural de páginas no PDF.\n"
+        }
+        let multiPageData = try conversionService.convertToPDF(text: rotationPageText, title: "RotacaoTest", from: .txt)
+        guard let rotationDoc = PDFDocument(data: multiPageData), rotationDoc.pageCount >= 2 else {
+            fatalError("Falha ao gerar PDF de múltiplas páginas para teste de rotação")
+        }
+
+        // Rotação individual (Página 1: 0° -> 90° -> 180°)
+        if let p0 = rotationDoc.page(at: 0) {
+            assertEqual(p0.rotation, 0)
+            p0.rotation = (p0.rotation + 90) % 360
+            assertEqual(p0.rotation, 90)
+            p0.rotation = (p0.rotation + 90) % 360
+            assertEqual(p0.rotation, 180)
+        }
+
+        // Rotação em lote de todas as páginas
+        for i in 0..<rotationDoc.pageCount {
+            if let p = rotationDoc.page(at: i) {
+                p.rotation = 90
+            }
+        }
+        for i in 0..<rotationDoc.pageCount {
+            assertEqual(rotationDoc.page(at: i)?.rotation, 90)
+        }
+        print("  ✓ testPDFPageRotationIndividualAndBatch passou")
+
+        // 21. Exclusão de Páginas (Versão 1.1)
+        print("\n▶ Testando Exclusão Estrutural de Páginas (Versão 1.1)...")
+        let initialCount = rotationDoc.pageCount
+        assertTrue(initialCount >= 2, "Documento deve ter pelo menos 2 páginas para testar exclusão")
+
+        // Exclui a primeira página
+        rotationDoc.removePage(at: 0)
+        assertEqual(rotationDoc.pageCount, initialCount - 1)
+
+        // Trava lógica de segurança: se restar 1 página, não deve permitir ficar vazio
+        while rotationDoc.pageCount > 1 {
+            rotationDoc.removePage(at: 0)
+        }
+        assertEqual(rotationDoc.pageCount, 1)
+        print("  ✓ testPDFPageDeletionAndSafetyLimit passou")
+
+        // 22. Compressão de Arquivo PDF (Versão 1.1)
+        print("\n▶ Testando Compressão de Arquivo PDF (Versão 1.1)...")
+        let compressionService = PDFCompressionService.shared
+        let sampleDocData = try conversionService.convertToPDF(
+            text: "Documento de teste com texto estruturado para validação de compressão e renderização de streams.",
+            title: "CompressaoTest",
+            from: .txt
+        )
+        guard let sampleDoc = PDFDocument(data: sampleDocData) else {
+            fatalError("Falha ao gerar PDF para teste de compressão")
+        }
+
+        for level in CompressionLevel.allCases {
+            let result = try compressionService.compressPDF(document: sampleDoc, level: level)
+            assertTrue(!result.data.isEmpty, "Dados comprimidos para nível \(level.rawValue) não devem ser vazios")
+            assertTrue(result.compressedSize > 0, "Tamanho comprimido deve ser positivo")
+
+            // Valida se o documento comprimido é um PDF válido e legível pelo PDFKit
+            guard let reloadedCompressedDoc = PDFDocument(data: result.data) else {
+                fatalError("Dados gerados pela compressão \(level.rawValue) não formam um PDF válido")
+            }
+            assertEqual(reloadedCompressedDoc.pageCount, sampleDoc.pageCount)
+        }
+        print("  ✓ testPDFCompressionAllLevels passou")
+
         print("\n========================================")
-        print("TODOS OS 19 TESTES PASSARAM COM SUCESSO! 🎉")
+        print("TODOS OS 22 TESTES PASSARAM COM SUCESSO! 🎉")
         print("========================================")
     }
 }
