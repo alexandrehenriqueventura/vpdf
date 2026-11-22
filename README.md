@@ -1,4 +1,4 @@
-# vpdf — Leitor e Conversor de Arquivos PDF para macOS
+# vpdf — Leitor, Editor e Conversor de Arquivos PDF para macOS
 
 <p align="center">
   <img src="Sources/vpdf/Resources/AppIcon.png" width="128" height="128" alt="vpdf App Icon">
@@ -9,7 +9,7 @@
     <img src="https://github.com/alexandrehenriqueventura/vpdf/actions/workflows/ci.yml/badge.svg" alt="CI Status">
   </a>
   <a href="https://github.com/alexandrehenriqueventura/vpdf/releases/latest">
-    <img src="https://img.shields.io/github/v/release/alexandrehenriqueventura/vpdf?color=007AFF&label=Download%20v1.0.0" alt="Download Release">
+    <img src="https://img.shields.io/github/v/release/alexandrehenriqueventura/vpdf?color=007AFF&label=Download%20v1.1.0" alt="Download Release">
   </a>
   <img src="https://img.shields.io/badge/macOS-14.0%2B-000000?logo=apple" alt="macOS 14+">
   <img src="https://img.shields.io/badge/Swift-5.9%2B-FA7343?logo=swift" alt="Swift 5.9+">
@@ -18,11 +18,11 @@
 
 <p align="center">
   <b>Aplicativo nativo para macOS (14.0+ Sonoma / Sequoia) desenvolvido em Swift 5.9+ e SwiftUI.</b><br>
-  Leitor de PDFs focado em agilidade, navegação hierárquica por pastas e conversão de documentos com estética limpa inspirada nas diretrizes de design do macOS (<i>Apple Human Interface Guidelines</i>).
+  Leitor e editor de PDFs focado em agilidade, navegação hierárquica por pastas, organização e compressão de páginas e conversão de documentos com estética limpa inspirada nas diretrizes de design do macOS (<i>Apple Human Interface Guidelines</i>).
 </p>
 
 <p align="center">
-  👉 <b><a href="https://github.com/alexandrehenriqueventura/vpdf/releases/download/v1.0.0/vpdf-macos.zip">Baixar Versão Pré-compilada (macOS 14+ Sonoma / Sequoia)</a></b> 👈<br>
+  👉 <b><a href="https://github.com/alexandrehenriqueventura/vpdf/releases/download/v1.1.0/vpdf-macos.zip">Baixar Versão Pré-compilada (macOS 14+ Sonoma / Sequoia)</a></b> 👈<br>
   🍏/💻 <b><a href="./vpdf-universal-macos13.zip">Baixar Versão Universal (macOS 13+ Ventura / Intel & Apple Silicon)</a></b>
 </p>
 
@@ -31,7 +31,7 @@
 ## ⚡️ Instalação Rápida (Sem Compilar)
 
 Escolha a versão correspondente ao seu sistema:
-- **macOS 14+ (Sonoma / Sequoia - Apple Silicon):** Baixe o **[vpdf-macos.zip](https://github.com/alexandrehenriqueventura/vpdf/releases/download/v1.0.0/vpdf-macos.zip)** na aba de Releases.
+- **macOS 14+ (Sonoma / Sequoia - Apple Silicon):** Baixe o **[vpdf-macos.zip](https://github.com/alexandrehenriqueventura/vpdf/releases/download/v1.1.0/vpdf-macos.zip)** na aba de Releases ou utilize o arquivo `vpdf.app` gerado.
 - **macOS 13+ (Ventura / Sonoma / Sequoia - Macs Intel e Apple Silicon):** Baixe o arquivo **[`vpdf-universal-macos13.zip`](./vpdf-universal-macos13.zip)** disponível diretamente no repositório.
 
 1. Dê um duplo clique para descompactar o arquivo **`vpdf.app`**.
@@ -68,10 +68,54 @@ Escolha a versão correspondente ao seu sistema:
   <img src="docs/screenshots/barra-lateral-oculta.png" alt="Área de leitura expandida com barra lateral oculta" width="850">
 </p>
 
+<p align="center">
+  <b>5. Painel de Miniaturas e Gerenciamento Estrutural de Páginas (Novo na v1.1)</b><br>
+  <i>Acesse todas as páginas na gaveta lateral retrátil: gire páginas individuais, exclua páginas indesejadas, reordene e visualize o número da página ativa com sincronização bidirecional.</i><br><br>
+  <img src="docs/screenshots/painel-edicao-paginas.jpg" alt="Painel de Miniaturas e Edição de Páginas no vpdf" width="850">
+</p>
+
+<p align="center">
+  <b>6. Reordenação e Rotação de Páginas com Controle Total (Novo na v1.1)</b><br>
+  <i>Reorganize páginas em tempo recorde utilizando os botões de subir (▲) e descer (▼), menu de contexto (clique direito) ou arrastando e soltando (Drag & Drop) as miniaturas diretamente.</i><br><br>
+  <img src="docs/screenshots/reordenacao-e-rotacao-miniaturas.jpg" alt="Controles de Reordenação e Rotação de Páginas" width="400">
+</p>
+
+<p align="center">
+  <b>7. Compressão Inteligente de Arquivos PDF (Novo na v1.1)</b><br>
+  <i>Reduza o tamanho de PDFs para envio por e-mail ou armazenamento em disco com 3 níveis de otimização (Leve, Equilibrada e Forte), estimativa visual em tempo real e opção de substituir ou exportar uma cópia.</i><br><br>
+  <img src="docs/screenshots/compressao-pdf.jpg" alt="Modal de Compressão Inteligente de PDF" width="850">
+</p>
+
 ---
 
 ## ✨ Principais Funcionalidades
 
+### 🛠️ Edição e Organização de PDFs (Novidades da v1.1)
+- **Gaveta Lateral de Miniaturas de Páginas (`⌥⌘T`)**:
+  - Exibe a lista visual de todas as páginas do PDF com indicador de seleção e número da página em tempo real.
+  - Sincronização bidirecional com o leitor: clicar em uma miniatura navega instantaneamente para a página correspondente.
+- **Reordenação Flexível de Páginas (3 Modos)**:
+  - **Botões Rápidos no Card**: Suba (`▲`) ou desça (`▼`) qualquer página com apenas um clique.
+  - **Arrastar e Soltar (*Drag & Drop*)**: Reorganize a ordem simplesmente arrastando as miniaturas para a posição desejada.
+  - **Menu de Contexto Completo**: Clique com o botão direito para *Mover para Cima* (`⌥↑`), *Mover para Baixo* (`⌥↓`), *Mover para o Início (1ª Página)* ou *Mover para o Fim (Última Página)*.
+- **Rotação de Páginas Individuais**:
+  - Gire páginas selecionadas em passos de 90° no sentido horário ou anti-horário diretamente no card da miniatura ou pelo menu contextual.
+- **Exclusão Segura de Páginas**:
+  - Remova páginas desnecessárias com diálogo de confirmação seguro (`NSAlert`), evitando exclusões acidentais.
+- **Compressão Inteligente de Arquivos PDF**:
+  - Otimização automática do peso de arquivos mantendo a legibilidade tipográfica:
+    - **Leve (~150 DPI):** Compressão sutil ideal para impressão de alta qualidade.
+    - **Equilibrada (~120 DPI - Recomendada):** Excelente equilíbrio visual e ótima redução para e-mails e visualização em tela.
+    - **Forte (~90 DPI):** Máxima compressão para PDFs muito pesados ou arquivamento.
+  - Estimativa imediata do tamanho resultante antes de processar.
+  - Escolha entre **Substituir o Arquivo Atual** ou **Exportar Nova Cópia**.
+- **Salvar Alterações Diretamente (`⌘S`)**:
+  - Indicador de alterações pendentes (*isDirty*) com bolinha de status na aba e na barra superior.
+  - Salvamento nativo que preserva a estrutura vetorial, notas, anotações e metadados do PDF.
+
+---
+
+### 📖 Leitura e Produtividade
 - **Modo Apresentação em Tela Cheia (Slides e Apresentações)**:
   - Modo dedicado para apresentações com exibição em **Página Única (`.singlePage`)**, eliminando rolagens contínuas e respeitando rigorosamente a quebra de cada slide.
   - O slide é automaticamente centralizado e ajustado à tela cheia (`autoScales = true`) com fundo imersivo.
@@ -95,7 +139,6 @@ Escolha a versão correspondente ao seu sistema:
     - Indicador dinâmico de página atual e total (ex: **`1 de 100`**) em tipografia tabular monospaçada (`monospacedDigit()`), perfeitamente integrado sem deformar o design da barra.
     - Botões de zoom in/out (`⌘+` / `⌘-`), slider contínuo de escala, menu de escalas rápidas (50%, 75%, 100%, 150%, 200%, 300%) e botão de ajuste automático à largura da janela (`⇧⌘0`).
   - Rolagem suave com alta performance, mesmo em documentos com centenas de páginas.
-  - Busca de termos integrada no PDF com salto automático para a primeira ocorrência e destaque de resultados.
 - **Conversão Avançada de PDF para Word (.docx e .doc) Preservando Formatação**:
   - Ao converter de PDF para Word, o motor do `vpdf` extrai a árvore tipográfica rica de cada página (`PDFPage.attributedString`), preservando **tamanhos de fonte originais (títulos, subtítulos, corpo), pesos (negrito/itálico), cores de texto e separação de parágrafos**, sem achatar o conteúdo para texto puro.
   - Normalização inteligente de fontes de sistema para fontes padrão de mercado (como Helvetica/Arial) para total compatibilidade com o Microsoft Word em qualquer plataforma.
@@ -103,9 +146,9 @@ Escolha a versão correspondente ao seu sistema:
   - Conversão instantânea de arquivos Microsoft Word (`.docx` e `.doc`) diretamente para `.pdf` paginado em padrão A4 via `NSAttributedString` e `CoreText`, sem depender de LibreOffice ou bibliotecas externas.
   - Acessível diretamente pelo botão na barra de ferramentas ou na tela inicial do app.
 - **Barra Lateral com Árvore de Diretórios e Ocultação com Um Clique (NavigationSplitView)**:
-  - **Localização Instantânea de Documentos:** Listagem hierárquica inteligente filtrada **exclusivamente para arquivos PDF e pastas**, eliminando ruídos visuais de arquivos não suportados e permitindo encontrar e abrir documentos com máxima agilidade em pastas de faculdade, cursos ou relatórios.
+  - **Localização Instantânea de Documentos:** Listagem hierárquica inteligente filtrada **exclusivamente para arquivos PDF e pastas**, eliminando ruídos visuais de arquivos não suportados.
   - **Carregamento Preguiçoso (*Lazy Loading* Assíncrono):** Acesso ultrarrápido a diretórios com centenas de arquivos, carregando subpastas apenas no momento em que são expandidas.
-  - **Botão de Ocultação e Atalho (`⌃⌘S`):** Oculte ou exiba a barra lateral instantaneamente pelo botão nativo na barra de título (canto superior esquerdo) ou pelo atalho de teclado **`⌃⌘S`**, maximizando a área de leitura para foco total sem distrações.
+  - **Botão de Ocultação e Atalho (`⌃⌘S`):** Oculte ou exiba a barra lateral instantaneamente pelo botão nativo na barra de título (canto superior esquerdo) ou pelo atalho de teclado **`⌃⌘S`**.
 - **Conversão de Documentos (ConversionService)**:
   - Converte documentos entre múltiplos formatos:
     - **Word (.docx)**: Documento do Microsoft Word gerado nativamente via `officeOpenXML`.
@@ -126,6 +169,7 @@ Escolha a versão correspondente ao seu sistema:
 - **Padrão MVVM com `@Observable`**: Utiliza o framework moderno `Observation` nativo do Swift 5.9 / macOS 14+, garantindo renderizações cirúrgicas de UI sem a sobrecarga do clássico `ObservableObject`.
 - **AppKit onde o SwiftUI é insuficiente**:
   - `PDFViewerRepresentable` encapsula o `PDFView` com controle de busca, escalonamento automático e quebra de páginas.
+  - `VPDFView` especializa eventos de clique direito, anotações e contexto em pt-BR.
   - `TextEditorRepresentable` encapsula `NSTextView` para edição rápida e busca incremental.
 - **Zero Dependências Externas**: Criado 100% com os frameworks nativos da Apple (`SwiftUI`, `AppKit`, `PDFKit`, `CoreText`, `UniformTypeIdentifiers`).
 - **Operações Assíncronas (`async/await`)**: Leitura em disco, decodificação e processamento de arquivos são delegados para threads secundárias (`Task.detached`), mantendo a fluidez da interface a 60/120 fps.
@@ -153,11 +197,15 @@ vpdf/
 │       │   ├── EncodingService.swift   # Detecção precisa de codificação de texto
 │       │   └── ConversionService.swift # Motores de conversão (CoreText, Word DOCX, RTF, HTML5)
 │       ├── ViewModels/
-│       │   └── AppViewModel.swift   # Estado reativo e orquestração MVVM
+│       │   └── AppViewModel.swift   # Estado reativo, orquestração MVVM e mutação de páginas
 │       ├── Views/
-│       │   ├── ContentView.swift    # NavigationSplitView, Toolbar e área de leitura
+│       │   ├── ContentView.swift    # NavigationSplitView, Toolbar e área de leitura principal
 │       │   ├── VPDFView.swift       # Subclasse PDFView com suporte a pt-BR e anotações
 │       │   ├── PDFViewerRepresentable.swift # Ponte SwiftUI para o visualizador vetorial
+│       │   ├── PDFThumbnailsSidebar.swift # Gaveta lateral com rotação, reordenação e exclusão
+│       │   ├── PDFCompressionSheet.swift # Modal de compressão inteligente de arquivos PDF
+│       │   ├── PDFNoteEditorSheet.swift # Editor modal para anotações em notas adesivas
+│       │   ├── DocumentTabBar.swift # Barra de abas de múltiplos documentos
 │       │   ├── PDFZoomControlBar.swift # Barra flutuante translúcida de zoom e paginação
 │       │   ├── PDFSearchBar.swift   # Barra de busca flutuante com contador em tempo real
 │       │   ├── PDFAnnotationToolbar.swift # Ferramentas de marca-texto e seleção
@@ -170,7 +218,7 @@ vpdf/
 │           ├── Info.plist           # Metadados e identificação do bundle macOS
 │           └── vpdf.entitlements    # Permissões do App Sandbox
 └── Tests/
-    ├── TestRunner.swift             # Runner de testes via linha de comando (16 testes)
+    ├── TestRunner.swift             # Runner com 23 testes unitários via linha de comando
     └── vpdfTests/
         ├── EncodingServiceTests.swift   # Testes de detecção de codificação
         └── ConversionServiceTests.swift # Testes de conversão, paginação A4 e Word DOCX
@@ -182,14 +230,17 @@ vpdf/
 
 | Atalho | Ação |
 | :--- | :--- |
+| **`⌥⌘T`** | Exibir / ocultar gaveta lateral de miniaturas de páginas |
+| **`⌥⌘C`** | Abrir diálogo de compressão inteligente de PDF |
+| **`⌥↑`** / **`⌥↓`** | Mover página selecionada para cima ou para baixo |
 | **`⇧⌘F`** | Alternar Modo Apresentação em Tela Cheia (Slides) |
 | **`Esc`** | Sair da Apresentação / Fechar Barra de Busca |
 | **`⇧⌘O`** | Abrir nova pasta no disco |
-| **`⌘S`** | Salvar alterações |
+| **`⌘S`** | Salvar alterações estruturais do PDF no arquivo original |
 | **`⇧⌘E`** | Exportar documento no formato selecionado |
 | **`⌘F`** | Abrir barra de busca flutuante no documento |
 | **`↵`** / **`⇧↵`** | Próxima / Anterior ocorrência na busca |
-| **`⌃⌘S`** | Recolher / expandir barra lateral |
+| **`⌃⌘S`** | Recolher / expandir barra lateral de diretórios |
 | **`⌘+`** / **`⌘=`** | Aumentar zoom do visualizador de PDF |
 | **`⌘-`** | Reduzir zoom do visualizador de PDF |
 | **`⌘0`** | Redefinir zoom para o tamanho real (100%) |
@@ -210,7 +261,7 @@ Para abrir o aplicativo imediatamente após a compilação:
 ```bash
 open vpdf.app
 ```
-*(Ou dê um duplo clique no arquivo `vpdf.app` no Finder).*
+*(Ou dê um duplo clique no arquivo `vpdf.app` no Finder ou na sua Área de Trabalho).*
 
 ### 2. Abrindo no Xcode
 1. Abra o projeto diretamente com o comando:
@@ -223,38 +274,10 @@ open vpdf.app
 3. Pressione `⌘R` para executar com depuração interativa.
 
 ### 3. Executando os Testes Unitários
-O projeto inclui **16 testes unitários automatizados** validando detecção de codificação, paginação A4 vetorial, reconstrução 2D de tabelas, busca e anotações nativas:
+O projeto inclui **23 testes unitários automatizados** validando detecção de codificação, paginação A4 vetorial, reconstrução 2D de tabelas, busca, anotações, rotação e reordenação de páginas:
 
 ```bash
 ./run_tests.sh
-```
-
-**Resultado esperado:**
-```text
-========================================
-INICIANDO SUÍTES DE TESTES UNITÁRIOS
-========================================
-▶ Testando EncodingService...
-  ✓ testEmptyData passou
-  ✓ testUTF8WithoutBOM passou
-  ✓ testUTF8WithBOM passou
-  ✓ testUTF16LEWithBOM passou
-  ✓ testUTF16BEWithBOM passou
-  ✓ testWindows1252Encoding passou
-  ✓ testISO88591Latin1Encoding passou
-
-▶ Testando ConversionService...
-  ✓ testPlainTextConversion passou
-  ✓ testRTFConversion passou
-  ✓ testHTMLConversion passou
-  ✓ testPDFConversion (1 página) passou
-  ✓ testMultiPagePDFConversion (9 páginas) passou
-  ✓ testWordDocxToPDFConversion (1 página) passou
-  ✓ testPDFToWordDocxPreservingFormatting passou
-
-========================================
-TODOS OS 14 TESTES PASSARAM COM SUCESSO! 🎉
-========================================
 ```
 
 ---
