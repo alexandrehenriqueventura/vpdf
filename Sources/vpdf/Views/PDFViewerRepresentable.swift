@@ -9,6 +9,7 @@ public enum AnnotationCommand: Equatable {
     case strikeOut
     case copy
     case remove
+    case requestNote
 }
 
 /// Visualizador nativo de documentos PDF utilizando VPDFView (subclasse com suporte a pt-BR, anotações e apresentação).
@@ -26,6 +27,9 @@ public struct PDFViewerRepresentable: NSViewRepresentable {
     @Binding public var annotationCommand: AnnotationCommand?
     public var onDocumentEdited: (() -> Void)?
     public var onTogglePresentation: (() -> Void)?
+    public var onRequestAddNoteForSelection: ((PDFSelection) -> Void)?
+    public var onRequestAddStickyNoteAtPoint: ((PDFPage, CGPoint) -> Void)?
+    public var onRequestEditNote: ((PDFAnnotation, PDFPage) -> Void)?
 
     public init(
         document: PDFDocument?,
@@ -40,7 +44,10 @@ public struct PDFViewerRepresentable: NSViewRepresentable {
         totalPages: Binding<Int>,
         annotationCommand: Binding<AnnotationCommand?>,
         onDocumentEdited: (() -> Void)? = nil,
-        onTogglePresentation: (() -> Void)? = nil
+        onTogglePresentation: (() -> Void)? = nil,
+        onRequestAddNoteForSelection: ((PDFSelection) -> Void)? = nil,
+        onRequestAddStickyNoteAtPoint: ((PDFPage, CGPoint) -> Void)? = nil,
+        onRequestEditNote: ((PDFAnnotation, PDFPage) -> Void)? = nil
     ) {
         self.document = document
         self.isPresentationMode = isPresentationMode
@@ -55,6 +62,9 @@ public struct PDFViewerRepresentable: NSViewRepresentable {
         self._annotationCommand = annotationCommand
         self.onDocumentEdited = onDocumentEdited
         self.onTogglePresentation = onTogglePresentation
+        self.onRequestAddNoteForSelection = onRequestAddNoteForSelection
+        self.onRequestAddStickyNoteAtPoint = onRequestAddStickyNoteAtPoint
+        self.onRequestEditNote = onRequestEditNote
     }
 
     public func makeCoordinator() -> Coordinator {
@@ -83,6 +93,18 @@ public struct PDFViewerRepresentable: NSViewRepresentable {
                 coordinator?.parent.currentPage = cur
                 coordinator?.parent.totalPages = tot
             }
+        }
+
+        pdfView.onRequestAddNoteForSelection = { [weak coordinator] sel in
+            coordinator?.parent.onRequestAddNoteForSelection?(sel)
+        }
+
+        pdfView.onRequestAddStickyNoteAtPoint = { [weak coordinator] page, pt in
+            coordinator?.parent.onRequestAddStickyNoteAtPoint?(page, pt)
+        }
+
+        pdfView.onRequestEditNote = { [weak coordinator] anno, page in
+            coordinator?.parent.onRequestEditNote?(anno, page)
         }
 
         context.coordinator.attach(to: pdfView)
@@ -148,6 +170,8 @@ public struct PDFViewerRepresentable: NSViewRepresentable {
                     pdfView.copyCurrentSelection()
                 case .remove:
                     pdfView.removeAnnotationsFromSelection()
+                case .requestNote:
+                    pdfView.triggerAddNoteForCurrentSelection()
                 }
                 DispatchQueue.main.async {
                     self.annotationCommand = nil

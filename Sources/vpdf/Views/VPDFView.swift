@@ -32,6 +32,31 @@ public final class VPDFView: PDFView {
     public var onPresentationModeToggle: (() -> Void)?
     public var onAnnotationAdded: (() -> Void)?
     public var onSlideChanged: ((Int, Int) -> Void)?
+    public var onRequestAddNoteForSelection: ((PDFSelection) -> Void)?
+    public var onRequestAddStickyNoteAtPoint: ((PDFPage, CGPoint) -> Void)?
+    public var onRequestEditNote: ((PDFAnnotation, PDFPage) -> Void)?
+
+    private var lastRightClickPage: PDFPage?
+    private var lastRightClickPoint: CGPoint = .zero
+    private var lastRightClickAnnotation: PDFAnnotation?
+
+    public override func mouseUp(with event: NSEvent) {
+        super.mouseUp(with: event)
+        if event.clickCount == 2 {
+            let viewPoint = convert(event.locationInWindow, from: nil)
+            guard let page = page(for: viewPoint, nearest: false) else { return }
+            let pagePoint = convert(viewPoint, to: page)
+
+            for annotation in page.annotations {
+                if annotation.bounds.insetBy(dx: -6, dy: -6).contains(pagePoint) {
+                    if annotation.type == "Text" || (annotation.contents != nil && !annotation.contents!.isEmpty) {
+                        onRequestEditNote?(annotation, page)
+                        return
+                    }
+                }
+            }
+        }
+    }
 
     public override func keyDown(with event: NSEvent) {
         if isPresentationMode {
@@ -66,8 +91,46 @@ public final class VPDFView: PDFView {
         // Traduz recursivamente todos os itens nativos para Português do Brasil
         localizeMenu(originalMenu)
 
-        // Se houver texto selecionado, enriquece o topo do menu com ações rápidas de anotação e cópia
-        if let selection = currentSelection, let str = selection.string, !str.isEmpty {
+        let viewPoint = convert(event.locationInWindow, from: nil)
+        let clickedPage = page(for: viewPoint, nearest: false)
+        let pagePoint = clickedPage != nil ? convert(viewPoint, to: clickedPage!) : .zero
+
+        self.lastRightClickPage = clickedPage
+        self.lastRightClickPoint = pagePoint
+
+        var hitAnnotation: PDFAnnotation? = nil
+        if let page = clickedPage {
+            for anno in page.annotations {
+                if anno.bounds.insetBy(dx: -6, dy: -6).contains(pagePoint) {
+                    if anno.type == "Text" || (anno.contents != nil && !anno.contents!.isEmpty) {
+                        hitAnnotation = anno
+                        break
+                    }
+                }
+            }
+        }
+        self.lastRightClickAnnotation = hitAnnotation
+
+        // 1. Se clicou sobre uma nota existente (ícone ou realce com conteúdo)
+        if hitAnnotation != nil {
+            let editItem = NSMenuItem(title: "Editar Nota...", action: #selector(handleEditClickedAnnotationAction(_:)), keyEquivalent: "")
+            editItem.target = self
+            editItem.image = NSImage(systemSymbolName: "pencil", accessibilityDescription: nil)
+
+            let deleteItem = NSMenuItem(title: "Excluir Nota", action: #selector(handleDeleteClickedAnnotationAction(_:)), keyEquivalent: "")
+            deleteItem.target = self
+            deleteItem.image = NSImage(systemSymbolName: "trash", accessibilityDescription: nil)
+
+            originalMenu.insertItem(NSMenuItem.separator(), at: 0)
+            originalMenu.insertItem(deleteItem, at: 0)
+            originalMenu.insertItem(editItem, at: 0)
+        }
+        // 2. Se houver texto selecionado, enriquece com notas e marcações
+        else if let selection = currentSelection, let str = selection.string, !str.isEmpty {
+            let addNoteItem = NSMenuItem(title: "Adicionar Nota ao Texto...", action: #selector(handleAddNoteToSelectionAction(_:)), keyEquivalent: "")
+            addNoteItem.target = self
+            addNoteItem.image = NSImage(systemSymbolName: "note.text.badge.plus", accessibilityDescription: nil)
+
             let markupMenu = NSMenu(title: "Realçar com Cor")
             
             let colors: [(name: String, color: NSColor)] = [
@@ -104,7 +167,17 @@ public final class VPDFView: PDFView {
             originalMenu.insertItem(removeAnnoItem, at: 0)
             originalMenu.insertItem(strikeOutItem, at: 0)
             originalMenu.insertItem(underlineItem, at: 0)
+            originalMenu.insertItem(addNoteItem, at: 0)
             originalMenu.insertItem(highlightParentItem, at: 0)
+        }
+        // 3. Opção 2: Se clicou em qualquer ponto vazio da página (sem seleção e sem anotação prévia)
+        else if clickedPage != nil {
+            let addStickyItem = NSMenuItem(title: "Inserir Nota Adesiva Aqui...", action: #selector(handleAddStickyNoteAction(_:)), keyEquivalent: "")
+            addStickyItem.target = self
+            addStickyItem.image = NSImage(systemSymbolName: "note.text.badge.plus", accessibilityDescription: nil)
+
+            originalMenu.insertItem(NSMenuItem.separator(), at: 0)
+            originalMenu.insertItem(addStickyItem, at: 0)
         }
 
         // Adiciona opção para entrar/sair do Modo Apresentação no rodapé do menu
@@ -143,6 +216,31 @@ public final class VPDFView: PDFView {
 
     @objc private func handlePresentationToggleAction(_ sender: NSMenuItem) {
         onPresentationModeToggle?()
+    }
+
+    @objc private func handleAddNoteToSelectionAction(_ sender: NSMenuItem) {
+        triggerAddNoteForCurrentSelection()
+    }
+
+    @objc private func handleAddStickyNoteAction(_ sender: NSMenuItem) {
+        guard let page = lastRightClickPage else { return }
+        onRequestAddStickyNoteAtPoint?(page, lastRightClickPoint)
+    }
+
+    @objc private func handleEditClickedAnnotationAction(_ sender: NSMenuItem) {
+        guard let anno = lastRightClickAnnotation, let page = lastRightClickPage else { return }
+        onRequestEditNote?(anno, page)
+    }
+
+    @objc private func handleDeleteClickedAnnotationAction(_ sender: NSMenuItem) {
+        guard let anno = lastRightClickAnnotation, let page = lastRightClickPage else { return }
+        page.removeAnnotation(anno)
+        onAnnotationAdded?()
+    }
+
+    public func triggerAddNoteForCurrentSelection() {
+        guard let selection = currentSelection, let str = selection.string, !str.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        onRequestAddNoteForSelection?(selection)
     }
 
     public func addAnnotation(type: PDFAnnotationSubtype, color: NSColor) {

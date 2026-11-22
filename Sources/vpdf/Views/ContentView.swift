@@ -76,6 +76,27 @@ public struct ContentView: View {
         } message: {
             Text(closeTabAlertMessage)
         }
+        .sheet(item: $viewModel.activeNoteEditState) { noteState in
+            PDFNoteEditorSheet(
+                title: noteState.title,
+                isExisting: noteState.isExisting,
+                noteText: $viewModel.activeNoteText,
+                selectedColor: $viewModel.activeNoteColor,
+                onSave: {
+                    viewModel.commitNoteEdit(
+                        state: noteState,
+                        text: viewModel.activeNoteText,
+                        color: viewModel.activeNoteColor
+                    )
+                },
+                onDelete: noteState.isExisting ? {
+                    viewModel.deleteNote(state: noteState)
+                } : nil,
+                onCancel: {
+                    viewModel.activeNoteEditState = nil
+                }
+            )
+        }
         .onChange(of: viewModel.selectedItem) { _, newItem in
             if let item = newItem, !item.isDirectory {
                 if item.url != viewModel.currentLoadedURL {
@@ -273,7 +294,10 @@ public struct ContentView: View {
                 totalPages: $viewModel.pdfTotalPages,
                 annotationCommand: $viewModel.activeAnnotationCommand,
                 onDocumentEdited: { viewModel.markCurrentDocumentEdited() },
-                onTogglePresentation: { viewModel.togglePresentationMode() }
+                onTogglePresentation: { viewModel.togglePresentationMode() },
+                onRequestAddNoteForSelection: { sel in viewModel.requestAddNoteForSelection(sel) },
+                onRequestAddStickyNoteAtPoint: { page, pt in viewModel.requestAddStickyNote(on: page, at: pt) },
+                onRequestEditNote: { anno, page in viewModel.requestEditNote(annotation: anno, on: page) }
             )
             .id(viewModel.currentLoadedURL)
             .background(viewModel.isPresentationMode ? Color.black : Color(NSColor.windowBackgroundColor))
@@ -313,6 +337,7 @@ public struct ContentView: View {
                         onHighlight: { opt in viewModel.applyAnnotation(.highlight(opt)) },
                         onUnderline: { viewModel.applyAnnotation(.underline) },
                         onStrikeOut: { viewModel.applyAnnotation(.strikeOut) },
+                        onAddNote: { viewModel.applyAnnotation(.requestNote) },
                         onCopy: { viewModel.applyAnnotation(.copy) },
                         onRemoveAnnotation: { viewModel.applyAnnotation(.remove) },
                         onSave: { Task { await viewModel.saveCurrentFile() } },

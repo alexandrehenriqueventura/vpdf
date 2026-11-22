@@ -252,8 +252,60 @@ struct TestRunner {
         assertTrue(elapsed < 3000.0, "Conversão de página densa deve ser instantânea (levou \(Int(elapsed))ms)")
         print("  ✓ testPerformancePDFToWordOptimization passou (\(Int(elapsed))ms)")
 
+        // 19. Inserção de Notas em Texto e Notas Adesivas Livres (Opção 2)
+        print("\n▶ Testando Inserção e Gestão de Notas em PDF...")
+        let noteDocData = try conversionService.convertToPDF(text: "Parágrafo com texto para anotação e revisão de contrato.", title: "NotasTest", from: .txt)
+        guard let noteDoc = PDFDocument(data: noteDocData), let notePage = noteDoc.page(at: 0) else {
+            fatalError("Falha ao gerar PDF para teste de notas")
+        }
+
+        // A. Nota ancorada em seleção de texto (Realce + Conteúdo da nota)
+        let noteSelectionMatches = noteDoc.findString("revisão", withOptions: [.caseInsensitive])
+        assertTrue(!noteSelectionMatches.isEmpty, "Deve encontrar a palavra 'revisão'")
+        if let match = noteSelectionMatches.first {
+            let bounds = match.bounds(for: notePage)
+            let highlightWithNote = PDFAnnotation(bounds: bounds, forType: .highlight, withProperties: nil)
+            highlightWithNote.color = NSColor.yellow
+            highlightWithNote.contents = "Nota: Verificar cláusula de revisão periódica."
+            notePage.addAnnotation(highlightWithNote)
+
+            let noteIconAnnotation = PDFAnnotation(bounds: CGRect(x: bounds.maxX + 4, y: bounds.maxY - 14, width: 22, height: 22), forType: .text, withProperties: nil)
+            noteIconAnnotation.color = NSColor.yellow
+            noteIconAnnotation.contents = "Nota: Verificar cláusula de revisão periódica."
+            notePage.addAnnotation(noteIconAnnotation)
+        }
+
+        // B. Nota adesiva livre em coordenada arbitrária da página (Opção 2)
+        let freeStickyNote = PDFAnnotation(bounds: CGRect(x: 120, y: 450, width: 24, height: 24), forType: .text, withProperties: nil)
+        freeStickyNote.color = NSColor.systemGreen
+        freeStickyNote.contents = "Lembrete geral inserido no espaço vazio da página."
+        notePage.addAnnotation(freeStickyNote)
+
+        // C. Valida presença e persistência dos dados
+        let totalAnnotations = notePage.annotations.count
+        assertTrue(totalAnnotations >= 3, "Página deve conter pelo menos 3 anotações")
+
+        // Persistência em disco / Data
+        guard let savedData = noteDoc.dataRepresentation(),
+              let reloadedDoc = PDFDocument(data: savedData),
+              let reloadedPage = reloadedDoc.page(at: 0) else {
+            fatalError("Falha ao serializar e recarregar PDF com anotações")
+        }
+
+        let reloadedTextNotes = reloadedPage.annotations.filter { $0.type == "Text" }
+        assertTrue(reloadedTextNotes.count >= 2, "PDF recarregado deve conter as notas adesivas salvas")
+        let freeNoteFound = reloadedTextNotes.contains { $0.contents == "Lembrete geral inserido no espaço vazio da página." }
+        assertTrue(freeNoteFound, "Conteúdo da nota livre deve ser preservado exatamente como salvo")
+
+        // D. Edição e Exclusão de Nota
+        freeStickyNote.contents = "Texto da nota editado com sucesso!"
+        assertEqual(freeStickyNote.contents, "Texto da nota editado com sucesso!")
+        notePage.removeAnnotation(freeStickyNote)
+        assertTrue(!notePage.annotations.contains(freeStickyNote), "Nota deve ser removida da página com sucesso")
+        print("  ✓ testPDFNotesTextAndFreeStickyAnnotations passou")
+
         print("\n========================================")
-        print("TODOS OS 18 TESTES PASSARAM COM SUCESSO! 🎉")
+        print("TODOS OS 19 TESTES PASSARAM COM SUCESSO! 🎉")
         print("========================================")
     }
 }

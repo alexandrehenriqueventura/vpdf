@@ -43,6 +43,9 @@ public final class AppViewModel {
     public var isAnnotationToolbarPresented: Bool = false
     public var selectedHighlightColor: HighlightColorOption = .yellow
     public var activeAnnotationCommand: AnnotationCommand? = nil
+    public var activeNoteEditState: NoteEditState? = nil
+    public var activeNoteText: String = ""
+    public var activeNoteColor: HighlightColorOption = .yellow
 
     // MARK: - Formato de Conversão Selecionado
     public var selectedConversionFormat: ConversionFormat = .pdf
@@ -761,8 +764,104 @@ public final class AppViewModel {
 
     public func applyAnnotation(_ command: AnnotationCommand) {
         self.activeAnnotationCommand = command
-        if command != .copy {
+        if command != .copy && command != .requestNote {
             self.isDirty = true
         }
+    }
+
+    // MARK: - Inserção e Gestão de Notas (Opção 2: Texto Selecionado e Ponto Livre)
+
+    public func requestAddNoteForSelection(_ selection: PDFSelection) {
+        self.activeNoteText = ""
+        self.activeNoteColor = selectedHighlightColor
+        self.activeNoteEditState = NoteEditState(
+            title: "Nova Nota no Texto",
+            text: "",
+            color: selectedHighlightColor,
+            isExisting: false,
+            targetSelection: selection
+        )
+    }
+
+    public func requestAddStickyNote(on page: PDFPage, at point: CGPoint) {
+        self.activeNoteText = ""
+        self.activeNoteColor = selectedHighlightColor
+        self.activeNoteEditState = NoteEditState(
+            title: "Nova Nota Adesiva",
+            text: "",
+            color: selectedHighlightColor,
+            isExisting: false,
+            targetPage: page,
+            targetPoint: point
+        )
+    }
+
+    public func requestEditNote(annotation: PDFAnnotation, on page: PDFPage) {
+        let text = annotation.contents ?? ""
+        let color = HighlightColorOption.matching(nsColor: annotation.color)
+        self.activeNoteText = text
+        self.activeNoteColor = color
+        self.activeNoteEditState = NoteEditState(
+            title: "Editar Nota",
+            text: text,
+            color: color,
+            isExisting: true,
+            targetPage: page,
+            existingAnnotation: annotation
+        )
+    }
+
+    public func commitNoteEdit(state: NoteEditState, text: String, color: HighlightColorOption) {
+        if state.isExisting, let annotation = state.existingAnnotation {
+            annotation.contents = text
+            annotation.color = color.nsColor
+            markCurrentDocumentEdited()
+        } else if let selection = state.targetSelection {
+            for page in selection.pages {
+                let bounds = selection.bounds(for: page)
+                guard bounds.width > 0 && bounds.height > 0 else { continue }
+
+                // 1. Cria realce na seleção com a cor escolhida e anexa o texto da nota
+                let highlight = PDFAnnotation(bounds: bounds, forType: .highlight, withProperties: nil)
+                highlight.color = color.nsColor
+                highlight.contents = text
+                page.addAnnotation(highlight)
+
+                // 2. Cria ícone visual de nota adesiva (.text) na margem/canto da seleção para clique/duplo-clique
+                let pageCrop = page.bounds(for: .cropBox)
+                let noteX = min(pageCrop.maxX - 28, max(pageCrop.minX + 4, bounds.maxX + 4))
+                let noteY = min(pageCrop.maxY - 28, max(pageCrop.minY + 4, bounds.maxY - 14))
+                let noteRect = NSRect(x: noteX, y: noteY, width: 22, height: 22)
+
+                let noteAnnotation = PDFAnnotation(bounds: noteRect, forType: .text, withProperties: nil)
+                noteAnnotation.color = color.nsColor
+                noteAnnotation.contents = text
+                noteAnnotation.iconType = .comment
+                page.addAnnotation(noteAnnotation)
+            }
+            markCurrentDocumentEdited()
+        } else if let page = state.targetPage, let point = state.targetPoint {
+            // Nota livre inserida em coordenada arbitrária da folha (Opção 2)
+            let pageCrop = page.bounds(for: .cropBox)
+            let noteX = min(pageCrop.maxX - 26, max(pageCrop.minX + 4, point.x - 12))
+            let noteY = min(pageCrop.maxY - 26, max(pageCrop.minY + 4, point.y - 12))
+            let noteRect = NSRect(x: noteX, y: noteY, width: 24, height: 24)
+
+            let noteAnnotation = PDFAnnotation(bounds: noteRect, forType: .text, withProperties: nil)
+            noteAnnotation.color = color.nsColor
+            noteAnnotation.contents = text
+            noteAnnotation.iconType = .comment
+            page.addAnnotation(noteAnnotation)
+            markCurrentDocumentEdited()
+        }
+        self.activeNoteEditState = nil
+    }
+
+    public func deleteNote(state: NoteEditState) {
+        if let annotation = state.existingAnnotation, let page = state.targetPage {
+            page.removeAnnotation(annotation)
+            markCurrentDocumentEdited()
+        }
+        self.activeNoteEditState = nil
     }
 }

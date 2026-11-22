@@ -27,15 +27,28 @@ public enum HighlightColorOption: String, CaseIterable, Identifiable {
         let (r, g, b) = rgbComponents
         return NSColor(red: r, green: g, blue: b, alpha: 0.55)
     }
+
+    public static func matching(nsColor: NSColor?) -> HighlightColorOption {
+        guard let color = nsColor?.usingColorSpace(.sRGB) else { return .yellow }
+        let r = color.redComponent
+        let g = color.greenComponent
+        let b = color.blueComponent
+
+        if b > 0.8 && r < 0.6 { return .blue }
+        if g > 0.8 && r < 0.7 { return .green }
+        if r > 0.85 && b > 0.6 { return .pink }
+        return .yellow
+    }
 }
 
-/// Barra de ferramentas de seleção e anotação de texto (marcadores de cor, sublinhado, tachado e cópia rápida).
+/// Barra de ferramentas de seleção e anotação de texto (marcadores de cor, sublinhado, tachado, notas e cópia rápida).
 public struct PDFAnnotationToolbar: View {
     @Binding public var selectedColor: HighlightColorOption
     public var isDirty: Bool
     public let onHighlight: (HighlightColorOption) -> Void
     public let onUnderline: () -> Void
     public let onStrikeOut: () -> Void
+    public let onAddNote: () -> Void
     public let onCopy: () -> Void
     public let onRemoveAnnotation: () -> Void
     public var onSave: (() -> Void)?
@@ -47,6 +60,7 @@ public struct PDFAnnotationToolbar: View {
         onHighlight: @escaping (HighlightColorOption) -> Void,
         onUnderline: @escaping () -> Void,
         onStrikeOut: @escaping () -> Void,
+        onAddNote: @escaping () -> Void = {},
         onCopy: @escaping () -> Void,
         onRemoveAnnotation: @escaping () -> Void,
         onSave: (() -> Void)? = nil,
@@ -57,6 +71,7 @@ public struct PDFAnnotationToolbar: View {
         self.onHighlight = onHighlight
         self.onUnderline = onUnderline
         self.onStrikeOut = onStrikeOut
+        self.onAddNote = onAddNote
         self.onCopy = onCopy
         self.onRemoveAnnotation = onRemoveAnnotation
         self.onSave = onSave
@@ -120,6 +135,22 @@ public struct PDFAnnotationToolbar: View {
             .buttonStyle(.plain)
             .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 6))
             .help("Tachar texto selecionado")
+
+            // Inserir Nota
+            Button(action: onAddNote) {
+                HStack(spacing: 4) {
+                    Image(systemName: "note.text.badge.plus")
+                        .font(.system(size: 11, weight: .medium))
+                    Text("Nota")
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundStyle(Color.primary)
+                .padding(.horizontal, 7)
+                .frame(height: 26)
+            }
+            .buttonStyle(.plain)
+            .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 6))
+            .help("Inserir nota ou comentário no texto selecionado")
 
             // Limpar Realces
             Button(action: onRemoveAnnotation) {
