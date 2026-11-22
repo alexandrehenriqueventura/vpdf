@@ -48,7 +48,7 @@ public final class AppViewModel {
     public var activeNoteColor: HighlightColorOption = .yellow
 
     // MARK: - Versão 1.1: Painel de Miniaturas e Edição Estrutural
-    public var isThumbnailsSidebarVisible: Bool = false
+    public var isThumbnailsSidebarVisible: Bool = true
     public var documentRevisionID: UUID = UUID()
     public var showCompressionSheet: Bool = false
     public var isCompressing: Bool = false
