@@ -2,13 +2,18 @@ import SwiftUI
 import AppKit
 import PDFKit
 
-/// Painel lateral retrátil de miniaturas para visualização e edição estrutural de páginas PDF.
+/// Painel lateral retrátil de miniaturas para visualização, reordenação e edição estrutural de páginas PDF.
 public struct PDFThumbnailsSidebar: View {
     public let document: PDFDocument?
     public let revisionID: UUID
     @Binding public var currentPage: Int
     public let totalPages: Int
     public let onSelectPage: (Int) -> Void
+    public let onMovePage: (Int, Int) -> Void
+    public let onMovePageUp: (Int) -> Void
+    public let onMovePageDown: (Int) -> Void
+    public let onMovePageToStart: (Int) -> Void
+    public let onMovePageToEnd: (Int) -> Void
     public let onRotatePage: (Int, Bool) -> Void
     public let onRotateAllPages: (Bool) -> Void
     public let onDeletePage: (Int) -> Void
@@ -21,6 +26,11 @@ public struct PDFThumbnailsSidebar: View {
         currentPage: Binding<Int>,
         totalPages: Int,
         onSelectPage: @escaping (Int) -> Void,
+        onMovePage: @escaping (Int, Int) -> Void,
+        onMovePageUp: @escaping (Int) -> Void,
+        onMovePageDown: @escaping (Int) -> Void,
+        onMovePageToStart: @escaping (Int) -> Void,
+        onMovePageToEnd: @escaping (Int) -> Void,
         onRotatePage: @escaping (Int, Bool) -> Void,
         onRotateAllPages: @escaping (Bool) -> Void,
         onDeletePage: @escaping (Int) -> Void,
@@ -32,6 +42,11 @@ public struct PDFThumbnailsSidebar: View {
         self._currentPage = currentPage
         self.totalPages = totalPages
         self.onSelectPage = onSelectPage
+        self.onMovePage = onMovePage
+        self.onMovePageUp = onMovePageUp
+        self.onMovePageDown = onMovePageDown
+        self.onMovePageToStart = onMovePageToStart
+        self.onMovePageToEnd = onMovePageToEnd
         self.onRotatePage = onRotatePage
         self.onRotateAllPages = onRotateAllPages
         self.onDeletePage = onDeletePage
@@ -49,9 +64,9 @@ public struct PDFThumbnailsSidebar: View {
 
                 Spacer()
 
-                // Botão de Compressão de PDF
+                // Botão de Compressão de PDF (Ícone corrigido)
                 Button(action: onShowCompression) {
-                    Image(systemName: "arrow.down.right.and.arrow.up.left.to.center")
+                    Image(systemName: "arrow.down.doc")
                         .font(.system(size: 11, weight: .medium))
                         .frame(width: 22, height: 22)
                 }
@@ -75,7 +90,7 @@ public struct PDFThumbnailsSidebar: View {
 
             Divider()
 
-            // Lista de Miniaturas
+            // Lista de Miniaturas com Reordenação
             ScrollView(.vertical, showsIndicators: true) {
                 LazyVStack(spacing: 12) {
                     ForEach(0..<totalPages, id: \.self) { index in
@@ -83,10 +98,10 @@ public struct PDFThumbnailsSidebar: View {
                     }
                 }
                 .padding(.vertical, 10)
-                .padding(.horizontal, 10)
+                .padding(.horizontal, 8)
             }
         }
-        .frame(minWidth: 180, idealWidth: 195, maxWidth: 220)
+        .frame(minWidth: 195, idealWidth: 215, maxWidth: 240)
         .background(Color(NSColor.windowBackgroundColor).opacity(0.95))
     }
 
@@ -113,7 +128,7 @@ public struct PDFThumbnailsSidebar: View {
                         .controlSize(.small)
                 }
             }
-            .frame(width: 150, height: 190)
+            .frame(width: 160, height: 195)
             .overlay(
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .stroke(isSelected ? Color.accentColor : Color.primary.opacity(0.12), lineWidth: isSelected ? 2.5 : 1)
@@ -122,13 +137,53 @@ public struct PDFThumbnailsSidebar: View {
             .onTapGesture {
                 onSelectPage(index + 1)
             }
+            // Suporte a Arrastar e Soltar (Drag & Drop) para reordenação direta
+            .onDrag {
+                NSItemProvider(object: String(index) as NSString)
+            }
+            .onDrop(of: [.text], isTargeted: nil) { providers in
+                guard let provider = providers.first else { return false }
+                _ = provider.loadObject(ofClass: NSString.self) { stringItem, _ in
+                    guard let str = stringItem as? String, let sourceIndex = Int(str) else { return }
+                    DispatchQueue.main.async {
+                        onMovePage(sourceIndex, index)
+                    }
+                }
+                return true
+            }
 
-            // Rótulo da Página e Ações Rápidas
-            HStack(spacing: 4) {
+            // Rótulo da Página, Reordenação (⬆/⬇) e Ações Rápidas (↺/↻/🗑)
+            HStack(spacing: 3) {
                 Text("\(index + 1)")
                     .font(.system(size: 11, weight: isSelected ? .bold : .medium))
                     .foregroundStyle(isSelected ? Color.accentColor : .secondary)
-                    .frame(minWidth: 20, alignment: .leading)
+                    .frame(minWidth: 18, alignment: .leading)
+
+                // Mover para Cima (▲)
+                Button {
+                    onMovePageUp(index)
+                } label: {
+                    Image(systemName: "chevron.up")
+                        .font(.system(size: 9, weight: .bold))
+                        .frame(width: 18, height: 20)
+                }
+                .buttonStyle(.plain)
+                .disabled(index == 0)
+                .background(Color.primary.opacity(index == 0 ? 0.02 : 0.06), in: RoundedRectangle(cornerRadius: 4))
+                .help(index > 0 ? "Mover página para cima" : "Esta é a primeira página")
+
+                // Mover para Baixo (▼)
+                Button {
+                    onMovePageDown(index)
+                } label: {
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 9, weight: .bold))
+                        .frame(width: 18, height: 20)
+                }
+                .buttonStyle(.plain)
+                .disabled(index >= totalPages - 1)
+                .background(Color.primary.opacity(index >= totalPages - 1 ? 0.02 : 0.06), in: RoundedRectangle(cornerRadius: 4))
+                .help(index < totalPages - 1 ? "Mover página para baixo" : "Esta é a última página")
 
                 Spacer()
 
@@ -137,8 +192,8 @@ public struct PDFThumbnailsSidebar: View {
                     onRotatePage(index, false)
                 } label: {
                     Image(systemName: "arrow.counterclockwise")
-                        .font(.system(size: 10, weight: .medium))
-                        .frame(width: 22, height: 20)
+                        .font(.system(size: 9, weight: .medium))
+                        .frame(width: 20, height: 20)
                 }
                 .buttonStyle(.plain)
                 .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 4))
@@ -149,8 +204,8 @@ public struct PDFThumbnailsSidebar: View {
                     onRotatePage(index, true)
                 } label: {
                     Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 10, weight: .medium))
-                        .frame(width: 22, height: 20)
+                        .font(.system(size: 9, weight: .medium))
+                        .frame(width: 20, height: 20)
                 }
                 .buttonStyle(.plain)
                 .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 4))
@@ -161,20 +216,52 @@ public struct PDFThumbnailsSidebar: View {
                     onDeletePage(index)
                 } label: {
                     Image(systemName: "trash")
-                        .font(.system(size: 10, weight: .medium))
+                        .font(.system(size: 9, weight: .medium))
                         .foregroundStyle(totalPages > 1 ? Color.red.opacity(0.85) : Color.secondary.opacity(0.4))
-                        .frame(width: 22, height: 20)
+                        .frame(width: 20, height: 20)
                 }
                 .buttonStyle(.plain)
                 .disabled(totalPages <= 1)
                 .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 4))
                 .help(totalPages > 1 ? "Excluir página \(index + 1)" : "Não é possível excluir a única página do documento")
             }
-            .padding(.horizontal, 6)
+            .padding(.horizontal, 4)
         }
         .padding(6)
         .background(isSelected ? Color.accentColor.opacity(0.07) : Color.clear, in: RoundedRectangle(cornerRadius: 8))
         .contextMenu {
+            // Opções de Reordenação
+            Button {
+                onMovePageUp(index)
+            } label: {
+                Label("Mover para Cima", systemImage: "arrow.up")
+            }
+            .disabled(index == 0)
+
+            Button {
+                onMovePageDown(index)
+            } label: {
+                Label("Mover para Baixo", systemImage: "arrow.down")
+            }
+            .disabled(index >= totalPages - 1)
+
+            Button {
+                onMovePageToStart(index)
+            } label: {
+                Label("Mover para o Início (1ª Página)", systemImage: "arrow.up.to.line")
+            }
+            .disabled(index == 0)
+
+            Button {
+                onMovePageToEnd(index)
+            } label: {
+                Label("Mover para o Fim (Última Página)", systemImage: "arrow.down.to.line")
+            }
+            .disabled(index >= totalPages - 1)
+
+            Divider()
+
+            // Opções de Rotação
             Button {
                 onRotatePage(index, true)
             } label: {

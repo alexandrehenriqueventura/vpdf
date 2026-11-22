@@ -43,7 +43,7 @@ public struct PDFCompressionSheet: View {
         VStack(alignment: .leading, spacing: 16) {
             // Cabeçalho
             HStack(spacing: 10) {
-                Image(systemName: "arrow.down.right.and.arrow.up.left.to.center")
+                Image(systemName: "arrow.down.doc")
                     .font(.system(size: 20, weight: .bold))
                     .foregroundStyle(Color.accentColor)
 

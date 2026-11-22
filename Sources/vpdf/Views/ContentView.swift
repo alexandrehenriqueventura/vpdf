@@ -317,6 +317,21 @@ public struct ContentView: View {
                     onSelectPage: { pageNumber in
                         viewModel.goToPage(pageNumber)
                     },
+                    onMovePage: { from, to in
+                        viewModel.movePage(from: from, to: to)
+                    },
+                    onMovePageUp: { index in
+                        viewModel.movePageUp(at: index)
+                    },
+                    onMovePageDown: { index in
+                        viewModel.movePageDown(at: index)
+                    },
+                    onMovePageToStart: { index in
+                        viewModel.movePageToStart(at: index)
+                    },
+                    onMovePageToEnd: { index in
+                        viewModel.movePageToEnd(at: index)
+                    },
                     onRotatePage: { index, clockwise in
                         viewModel.rotatePage(at: index, clockwise: clockwise)
                     },
@@ -511,7 +526,7 @@ public struct ContentView: View {
             Button {
                 viewModel.prepareCompressionSheet()
             } label: {
-                Label("Comprimir PDF", systemImage: "arrow.down.right.and.arrow.up.left.to.center")
+                Label("Comprimir PDF", systemImage: "arrow.down.doc")
             }
             .disabled(viewModel.pdfDocument == nil)
             .help("Comprimir e reduzir o tamanho do arquivo PDF")

@@ -931,6 +931,48 @@ public final class AppViewModel {
         markCurrentDocumentEdited()
     }
 
+    // MARK: - Versão 1.1: Reordenação de Páginas
+
+    /// Move uma página de uma posição de origem para uma posição de destino.
+    public func movePage(from fromIndex: Int, to toIndex: Int) {
+        guard let doc = pdfDocument,
+              fromIndex >= 0, fromIndex < doc.pageCount,
+              toIndex >= 0, toIndex < doc.pageCount,
+              fromIndex != toIndex,
+              let page = doc.page(at: fromIndex) else { return }
+
+        doc.removePage(at: fromIndex)
+        doc.insert(page, at: toIndex)
+
+        pdfCurrentPage = toIndex + 1
+        documentRevisionID = UUID()
+        markCurrentDocumentEdited()
+    }
+
+    /// Move a página uma posição para cima (mais próxima do início).
+    public func movePageUp(at index: Int) {
+        guard index > 0 else { return }
+        movePage(from: index, to: index - 1)
+    }
+
+    /// Move a página uma posição para baixo (mais próxima do fim).
+    public func movePageDown(at index: Int) {
+        guard let doc = pdfDocument, index < doc.pageCount - 1 else { return }
+        movePage(from: index, to: index + 1)
+    }
+
+    /// Move a página diretamente para a primeira posição (Página 1).
+    public func movePageToStart(at index: Int) {
+        guard index > 0 else { return }
+        movePage(from: index, to: 0)
+    }
+
+    /// Move a página diretamente para a última posição do documento.
+    public func movePageToEnd(at index: Int) {
+        guard let doc = pdfDocument, index < doc.pageCount - 1 else { return }
+        movePage(from: index, to: doc.pageCount - 1)
+    }
+
     // MARK: - Versão 1.1: Compressão de PDF
 
     public func prepareCompressionSheet() {

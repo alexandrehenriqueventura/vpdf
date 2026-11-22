@@ -376,8 +376,33 @@ struct TestRunner {
         }
         print("  ✓ testPDFCompressionAllLevels passou")
 
+        // 23. Reordenação Estrutural de Páginas (Versão 1.1)
+        print("\n▶ Testando Reordenação Estrutural de Páginas (Versão 1.1)...")
+        let docAData = try conversionService.convertToPDF(text: "Página Alfa com texto único.", title: "DocA", from: .txt)
+        let docBData = try conversionService.convertToPDF(text: "Página Beta com texto único.", title: "DocB", from: .txt)
+        guard let docA = PDFDocument(data: docAData), let docB = PDFDocument(data: docBData),
+              let pageA = docA.page(at: 0), let pageB = docB.page(at: 0) else {
+            fatalError("Falha ao criar páginas para teste de reordenação")
+        }
+        let reorderDoc = PDFDocument()
+        reorderDoc.insert(pageA, at: 0)
+        reorderDoc.insert(pageB, at: 1)
+        assertEqual(reorderDoc.pageCount, 2)
+        assertTrue(reorderDoc.page(at: 0)?.string?.contains("Alfa") == true, "Página 0 deve ser Alfa inicialmente")
+        assertTrue(reorderDoc.page(at: 1)?.string?.contains("Beta") == true, "Página 1 deve ser Beta inicialmente")
+
+        // Move página 0 para índice 1
+        if let movedPage = reorderDoc.page(at: 0) {
+            reorderDoc.removePage(at: 0)
+            reorderDoc.insert(movedPage, at: 1)
+        }
+        assertEqual(reorderDoc.pageCount, 2)
+        assertTrue(reorderDoc.page(at: 0)?.string?.contains("Beta") == true, "Página 0 agora deve ser Beta após reordenação")
+        assertTrue(reorderDoc.page(at: 1)?.string?.contains("Alfa") == true, "Página 1 agora deve ser Alfa após reordenação")
+        print("  ✓ testPDFPageReordering passou")
+
         print("\n========================================")
-        print("TODOS OS 22 TESTES PASSARAM COM SUCESSO! 🎉")
+        print("TODOS OS 23 TESTES PASSARAM COM SUCESSO! 🎉")
         print("========================================")
     }
 }
