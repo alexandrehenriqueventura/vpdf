@@ -20,6 +20,10 @@ public final class VPDFView: PDFView {
         }
     }
 
+    public override var acceptsFirstResponder: Bool {
+        return true
+    }
+
     private enum KeyCode {
         static let rightArrow: UInt16 = 124
         static let downArrow: UInt16 = 125
@@ -27,6 +31,12 @@ public final class VPDFView: PDFView {
         static let leftArrow: UInt16 = 123
         static let upArrow: UInt16 = 126
         static let escape: UInt16 = 53
+        static let pageDown: UInt16 = 121
+        static let pageUp: UInt16 = 116
+        static let returnKey: UInt16 = 36
+        static let keypadEnter: UInt16 = 76
+        static let keyN: UInt16 = 45
+        static let keyP: UInt16 = 35
     }
 
     public var onPresentationModeToggle: (() -> Void)?
@@ -65,11 +75,11 @@ public final class VPDFView: PDFView {
     public override func keyDown(with event: NSEvent) {
         if isPresentationMode {
             switch event.keyCode {
-            case KeyCode.rightArrow, KeyCode.downArrow, KeyCode.space:
+            case KeyCode.rightArrow, KeyCode.downArrow, KeyCode.space, KeyCode.pageDown, KeyCode.returnKey, KeyCode.keypadEnter, KeyCode.keyN:
                 goToNextPage(nil)
                 notifySlideChanged()
                 return
-            case KeyCode.leftArrow, KeyCode.upArrow:
+            case KeyCode.leftArrow, KeyCode.upArrow, KeyCode.pageUp, KeyCode.keyP:
                 goToPreviousPage(nil)
                 notifySlideChanged()
                 return
@@ -77,7 +87,20 @@ public final class VPDFView: PDFView {
                 onPresentationModeToggle?()
                 return
             default:
-                break
+                if let specialKey = event.specialKey {
+                    switch specialKey {
+                    case .pageDown:
+                        goToNextPage(nil)
+                        notifySlideChanged()
+                        return
+                    case .pageUp:
+                        goToPreviousPage(nil)
+                        notifySlideChanged()
+                        return
+                    default:
+                        break
+                    }
+                }
             }
         }
         super.keyDown(with: event)

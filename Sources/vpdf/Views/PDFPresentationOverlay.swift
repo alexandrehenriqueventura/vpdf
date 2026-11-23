@@ -34,7 +34,7 @@ public struct PDFPresentationOverlay: View {
             .buttonStyle(.plain)
             .disabled(currentPage <= 1)
             .opacity(currentPage <= 1 ? 0.4 : 1.0)
-            .help("Slide anterior (← ou Espaço)")
+            .help("Slide anterior (←, ↑, Page Up ou Passador de Slides)")
 
             // Indicador de Slide
             Text("Slide \(currentPage) de \(totalPages)")
@@ -50,7 +50,7 @@ public struct PDFPresentationOverlay: View {
             .buttonStyle(.plain)
             .disabled(currentPage >= totalPages)
             .opacity(currentPage >= totalPages ? 0.4 : 1.0)
-            .help("Próximo slide (→ ou Espaço)")
+            .help("Próximo slide (→, ↓, Espaço, Page Down ou Passador de Slides)")
 
             Divider()
                 .frame(height: 18)

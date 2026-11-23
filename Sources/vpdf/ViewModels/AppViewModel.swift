@@ -31,7 +31,18 @@ public final class AppViewModel {
     public var pdfTotalPages: Int = 1
 
     // MARK: - Estado do Modo Apresentação (Slides / Tela Cheia)
-    public var isPresentationMode: Bool = false
+    public var isPresentationMode: Bool = false {
+        didSet {
+            if isPresentationMode {
+                startPresentationKeyMonitor()
+            } else {
+                stopPresentationKeyMonitor()
+            }
+        }
+    }
+
+    @ObservationIgnored
+    private var presentationKeyMonitor: Any?
 
     // MARK: - Estado de Busca Aprimorada
     public var searchText: String = ""
@@ -728,6 +739,79 @@ public final class AppViewModel {
     public func previousSlide() {
         if pdfCurrentPage > 1 {
             pdfCurrentPage -= 1
+        }
+    }
+
+    // MARK: - Monitor Global de Teclado e Passador de Slides
+
+    private func startPresentationKeyMonitor() {
+        stopPresentationKeyMonitor()
+        presentationKeyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self = self, self.isPresentationMode else { return event }
+
+            switch event.keyCode {
+            // Avançar Slide (Passador de slides USB/Bluetooth, Setas e Teclado)
+            case 121, // Page Down (Padrão universal de passadores de slides como Logitech/Kensington)
+                 124, // Seta Direita (Right Arrow)
+                 125, // Seta Abaixo (Down Arrow)
+                 49,  // Barra de Espaço (Space)
+                 36,  // Enter / Return
+                 76,  // Enter do Teclado Numérico
+                 45:  // Letra 'N' (Next slide)
+                DispatchQueue.main.async {
+                    self.nextSlide()
+                }
+                return nil // Evento consumido: evita beeps e cancela propagação
+
+            // Voltar Slide (Passador de slides USB/Bluetooth, Setas e Teclado)
+            case 116, // Page Up (Padrão universal de passadores de slides)
+                 123, // Seta Esquerda (Left Arrow)
+                 126, // Seta Acima (Up Arrow)
+                 35:  // Letra 'P' (Previous slide)
+                DispatchQueue.main.async {
+                    self.previousSlide()
+                }
+                return nil // Evento consumido
+
+            // Sair do Modo Apresentação
+            case 53:  // Escape
+                DispatchQueue.main.async {
+                    self.togglePresentationMode()
+                }
+                return nil // Evento consumido
+
+            default:
+                if let specialKey = event.specialKey {
+                    switch specialKey {
+                    case .pageDown:
+                        DispatchQueue.main.async {
+                            self.nextSlide()
+                        }
+                        return nil
+                    case .pageUp:
+                        DispatchQueue.main.async {
+                            self.previousSlide()
+                        }
+                        return nil
+                    default:
+                        break
+                    }
+                }
+                return event
+            }
+        }
+    }
+
+    private func stopPresentationKeyMonitor() {
+        if let monitor = presentationKeyMonitor {
+            NSEvent.removeMonitor(monitor)
+            presentationKeyMonitor = nil
+        }
+    }
+
+    deinit {
+        if let monitor = presentationKeyMonitor {
+            NSEvent.removeMonitor(monitor)
         }
     }
 

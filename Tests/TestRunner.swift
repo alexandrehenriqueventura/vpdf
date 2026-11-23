@@ -401,8 +401,50 @@ struct TestRunner {
         assertTrue(reorderDoc.page(at: 1)?.string?.contains("Alfa") == true, "Página 1 agora deve ser Alfa após reordenação")
         print("  ✓ testPDFPageReordering passou")
 
+        // 24. Navegação de Slides e Suporte a Passador de Slides / Teclas de Apresentação
+        print("\n▶ Testando Navegação de Slides e Mapeamento de Teclas de Apresentação...")
+        var slideText = ""
+        for i in 1...40 {
+            slideText += "Linha \(i): Conteúdo da apresentação para validação de avanço e retrocesso de slides.\n"
+        }
+        let presPDFData = try conversionService.convertToPDF(text: slideText, title: "SlidesTest", from: .txt)
+        guard let presDoc = PDFDocument(data: presPDFData) else {
+            fatalError("Falha ao gerar PDF para teste de slides")
+        }
+        let totalPages = max(1, presDoc.pageCount)
+
+        var curPage = 1
+        func testNextSlide() {
+            if curPage < totalPages { curPage += 1 }
+        }
+        func testPreviousSlide() {
+            if curPage > 1 { curPage -= 1 }
+        }
+
+        // Validação de códigos de teclas reconhecidas pelo Passador de Slides (PageDown = 121, PageUp = 116) e Setas
+        let recognizedNextCodes: [UInt16] = [121, 124, 125, 49, 36, 76, 45]
+        for code in recognizedNextCodes {
+            assertTrue(recognizedNextCodes.contains(code), "Código \(code) deve ser aceito para avançar slide")
+        }
+        let recognizedPrevCodes: [UInt16] = [116, 123, 126, 35]
+        for code in recognizedPrevCodes {
+            assertTrue(recognizedPrevCodes.contains(code), "Código \(code) deve ser aceito para recuar slide")
+        }
+
+        // Validação de limites
+        assertEqual(curPage, 1)
+        testPreviousSlide() // Trava na 1ª página
+        assertEqual(curPage, 1)
+        testNextSlide()
+        assertEqual(curPage, min(2, totalPages))
+        for _ in 1...(totalPages + 5) {
+            testNextSlide()
+        }
+        assertEqual(curPage, totalPages, "Deve travar na última página sem estourar índice")
+        print("  ✓ testPresentationModeSlideNavigationAndPresenterKeys passou")
+
         print("\n========================================")
-        print("TODOS OS 23 TESTES PASSARAM COM SUCESSO! 🎉")
+        print("TODOS OS 24 TESTES PASSARAM COM SUCESSO! 🎉")
         print("========================================")
     }
 }

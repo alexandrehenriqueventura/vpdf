@@ -31,6 +31,20 @@ public struct ContentView: View {
             }
             return .ignored
         }
+        .onKeyPress(.downArrow) {
+            if viewModel.isPresentationMode {
+                viewModel.nextSlide()
+                return .handled
+            }
+            return .ignored
+        }
+        .onKeyPress(.pageDown) {
+            if viewModel.isPresentationMode {
+                viewModel.nextSlide()
+                return .handled
+            }
+            return .ignored
+        }
         .onKeyPress(.leftArrow) {
             if viewModel.isPresentationMode {
                 viewModel.previousSlide()
@@ -38,7 +52,28 @@ public struct ContentView: View {
             }
             return .ignored
         }
+        .onKeyPress(.upArrow) {
+            if viewModel.isPresentationMode {
+                viewModel.previousSlide()
+                return .handled
+            }
+            return .ignored
+        }
+        .onKeyPress(.pageUp) {
+            if viewModel.isPresentationMode {
+                viewModel.previousSlide()
+                return .handled
+            }
+            return .ignored
+        }
         .onKeyPress(.space) {
+            if viewModel.isPresentationMode {
+                viewModel.nextSlide()
+                return .handled
+            }
+            return .ignored
+        }
+        .onKeyPress(.return) {
             if viewModel.isPresentationMode {
                 viewModel.nextSlide()
                 return .handled

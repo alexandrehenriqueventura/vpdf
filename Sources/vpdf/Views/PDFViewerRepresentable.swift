@@ -117,6 +117,11 @@ public struct PDFViewerRepresentable: NSViewRepresentable {
         // Sincroniza modo de Apresentação
         if pdfView.isPresentationMode != isPresentationMode {
             pdfView.isPresentationMode = isPresentationMode
+            if isPresentationMode {
+                DispatchQueue.main.async {
+                    pdfView.window?.makeFirstResponder(pdfView)
+                }
+            }
         }
 
         // Sincroniza documento
