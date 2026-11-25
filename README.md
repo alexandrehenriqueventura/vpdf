@@ -119,7 +119,10 @@ Escolha a versão correspondente ao seu sistema:
 - **Modo Apresentação em Tela Cheia (Slides e Apresentações)**:
   - Modo dedicado para apresentações com exibição em **Página Única (`.singlePage`)**, eliminando rolagens contínuas e respeitando rigorosamente a quebra de cada slide.
   - O slide é automaticamente centralizado e ajustado à tela cheia (`autoScales = true`) com fundo imersivo.
-  - Navegação nativa via teclado: Setas (← e →), Espaço e Page Up / Page Down.
+  - **Suporte Total a Passadores de Slides (Clickers / Presenters USB e Bluetooth)**:
+    - Compatível nativamente com controles de apresentação (Logitech, Kensington, Targus, etc.), interceptando os sinais de hardware **`Page Down`** (avançar) e **`Page Up`** (voltar).
+    - **Monitor Global de Teclado (`NSEvent.addLocalMonitorForEvents`)**: Intercepta comandos no nível da janela, garantindo que as teclas funcionem mesmo sem clicar na tela primeiro e eliminando sons de alerta (*beep*).
+    - Navegação completa via teclado: Setas (**`→`**, **`←`**, **`↓`**, **`↑`**), Barra de Espaço, **`Enter`**, **`N`** (*Next*) e **`P`** (*Previous*).
   - Painel flutuante discreto com indicador de slide (**`Slide 3 de 20`**), navegação e atalho `Esc` para retornar ao modo padrão.
   - Atalho rápido: **`⇧⌘F`** ou botão na barra superior.
 - **Ferramenta de Busca Avançada Integrada**:
@@ -218,7 +221,7 @@ vpdf/
 │           ├── Info.plist           # Metadados e identificação do bundle macOS
 │           └── vpdf.entitlements    # Permissões do App Sandbox
 └── Tests/
-    ├── TestRunner.swift             # Runner com 23 testes unitários via linha de comando
+    ├── TestRunner.swift             # Runner com 24 testes unitários via linha de comando
     └── vpdfTests/
         ├── EncodingServiceTests.swift   # Testes de detecção de codificação
         └── ConversionServiceTests.swift # Testes de conversão, paginação A4 e Word DOCX
@@ -234,6 +237,8 @@ vpdf/
 | **`⌥⌘C`** | Abrir diálogo de compressão inteligente de PDF |
 | **`⌥↑`** / **`⌥↓`** | Mover página selecionada para cima ou para baixo |
 | **`⇧⌘F`** | Alternar Modo Apresentação em Tela Cheia (Slides) |
+| **`Page Down`** / **`→`** / **`↓`** / **`Espaço`** / **`N`** | Avançar slide (Passador de slides / Teclado) |
+| **`Page Up`** / **`←`** / **`↑`** / **`P`** | Voltar slide (Passador de slides / Teclado) |
 | **`Esc`** | Sair da Apresentação / Fechar Barra de Busca |
 | **`⇧⌘O`** | Abrir nova pasta no disco |
 | **`⌘S`** | Salvar alterações estruturais do PDF no arquivo original |
@@ -274,7 +279,7 @@ open vpdf.app
 3. Pressione `⌘R` para executar com depuração interativa.
 
 ### 3. Executando os Testes Unitários
-O projeto inclui **23 testes unitários automatizados** validando detecção de codificação, paginação A4 vetorial, reconstrução 2D de tabelas, busca, anotações, rotação e reordenação de páginas:
+O projeto inclui **24 testes unitários automatizados** validando detecção de codificação, paginação A4 vetorial, reconstrução 2D de tabelas, busca, anotações, rotação, reordenação de páginas e navegação de slides:
 
 ```bash
 ./run_tests.sh
